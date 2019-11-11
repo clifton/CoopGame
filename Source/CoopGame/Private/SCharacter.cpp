@@ -18,6 +18,17 @@ void ASCharacter::BeginPlay()
 	
 }
 
+// velocity is -1.0 - 1.0
+void ASCharacter::MoveForward(float Velocity)
+{
+	AddMovementInput(GetActorForwardVector() * Velocity);
+}
+
+void ASCharacter::MoveRight(float Velocity)
+{
+	AddMovementInput(GetActorRightVector() * Velocity);
+}
+
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
@@ -30,5 +41,12 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	// wasd
+	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
+
+	// mouse look
+	PlayerInputComponent->BindAxis("LookUp", this, &ASCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &ASCharacter::AddControllerYawInput);
 }
 
