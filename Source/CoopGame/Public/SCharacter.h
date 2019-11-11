@@ -32,6 +32,10 @@ protected:
 
 	void MoveRight(float Velocity);
 
+	void BeginCrouch();
+
+	void EndCrouch();
+
 
 public:	
 	// Called every frame
