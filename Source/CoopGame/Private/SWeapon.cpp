@@ -3,6 +3,7 @@
 
 #include "SWeapon.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "DrawDebugHelpers.h"
 
 
 // Sets default values
@@ -19,13 +20,37 @@ ASWeapon::ASWeapon()
 void ASWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
+}
+
+void ASWeapon::Fire()
+{
+	AActor* MyOwner = GetOwner();
+	if (MyOwner == nullptr) return;
+
+	FVector EyeLocation;
+	FRotator EyeRotation;
+	MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
+
+	FVector TraceEnd = EyeLocation + (EyeRotation.Vector() * 10000);
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(MyOwner);
+	QueryParams.AddIgnoredActor(this);
+	// trace against mesh instead of simple collision boxes
+	QueryParams.bTraceComplex = true;
+
+	FHitResult HitResult;
+	bool bIsBlockingHit = GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECC_Visibility, QueryParams);
+	if (bIsBlockingHit)
+	{
+
+	}
+	DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
 }
 
 // Called every frame
 void ASWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
