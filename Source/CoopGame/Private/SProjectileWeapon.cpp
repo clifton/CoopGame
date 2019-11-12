@@ -3,33 +3,38 @@
 
 #include "SProjectileWeapon.h"
 #include "DrawDebugHelpers.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "SProjectile.h"
+#include "SCharacter.h"
 
-ASProjectileWeapon::ASProjectileWeapon()
-{
-	bExplodeOnImpact = false;
-	FuseSeconds = 1.0f;
-}
-
-void ASProjectileWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-}
 
 void ASProjectileWeapon::Fire()
 {
-	AActor* MyOwner = GetOwner();
-	if (MyOwner == nullptr) return;
+	ASCharacter* MyCharacter = Cast<ASCharacter>(GetOwner());
+	if (MyCharacter == nullptr) return;
+	if (ProjectileClass == nullptr) return;
+
+	FVector MuzzleLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
+	FRotator MuzzleRotation = MeshComp->GetSocketRotation(MuzzleSocketName);
+
+	//Set Spawn Collision Handling Override
+	FActorSpawnParameters ProjectileSpawnParams;
+	ProjectileSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+	ProjectileSpawnParams.Instigator = MyCharacter;
+
+	// spawn the projectile at the muzzle
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, ProjectileSpawnParams);
 
 	PlayMuzzleFlash();
 
-	FVector EyeLocation;
-	FRotator EyeRotation;
-	MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
+// 	FVector EyeLocation;
+// 	FRotator EyeRotation;
+// 	MyCharacter->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
-	FVector ShotDirection = EyeRotation.Vector();
+	// FVector ShotDirection = EyeRotation.Vector();
 
 	// straight line
-	FVector TraceEnd = EyeLocation + (ShotDirection * 10000);
+	// FVector TraceEnd = EyeLocation + (ShotDirection * 10000);
 
-	DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
+	// DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
 }

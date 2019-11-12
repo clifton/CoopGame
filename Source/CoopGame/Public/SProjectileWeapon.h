@@ -11,19 +11,10 @@ class COOPGAME_API ASProjectileWeapon : public ASWeapon
 {
 	GENERATED_BODY()
 
-public:
-
-	ASProjectileWeapon();
-	
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	bool bExplodeOnImpact;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", meta=(EditCondition="!bExplodeOnImpact"))
-	float FuseSeconds;
-
-	virtual void BeginPlay() override;
+	TSubclassOf<AActor> ProjectileClass;
 
 	virtual void Fire() override;
 };
