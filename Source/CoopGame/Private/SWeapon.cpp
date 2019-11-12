@@ -50,6 +50,8 @@ void ASWeapon::Fire()
 	// trace against mesh instead of simple collision boxes
 	QueryParams.bTraceComplex = true;
 
+	PlayMuzzleFlash();
+
 	FHitResult HitResult;
 	bool bIsBlockingHit = GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECC_Visibility, QueryParams);
 	if (bIsBlockingHit)
@@ -67,11 +69,6 @@ void ASWeapon::Fire()
 
 	// DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
 
-	if (MuzzleEffect)
-	{
-		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, MuzzleSocketName);
-	}
-
 	FVector MuzzleLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
 
 	if (TracerEffect)
@@ -81,6 +78,14 @@ void ASWeapon::Fire()
 		{
 			TracerComp->SetVectorParameter("Target", TracerEndPoint);
 		}
+	}
+}
+
+void ASWeapon::PlayMuzzleFlash()
+{
+	if (MuzzleEffect)
+	{
+		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, MuzzleSocketName);
 	}
 }
 

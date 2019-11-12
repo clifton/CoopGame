@@ -49,6 +49,8 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Fire();
 
+	void PlayMuzzleFlash();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
