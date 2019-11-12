@@ -2,7 +2,7 @@
 
 ### About
 
-Coop game created in the Unreal Engine 4 Mastery course.
+Coop game created in the [Unreal Engine 4 Mastery course](https://www.udemy.com/course/unrealengine-cpp).
 
 ### Step-by-step docs
 
