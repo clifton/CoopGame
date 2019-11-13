@@ -48,7 +48,5 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName TracerTargetName;
 
-	void PlayMuzzleFlash();
-
-	void PlayTracerEffect(const FVector& TracerEndPoint);
+	void PlayFireEffects(FVector TracerEndPoint = FVector());
 };

@@ -29,6 +29,6 @@ void ASProjectileWeapon::Fire()
 	// spawn the projectile at the muzzle
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, EyeRotation, ProjectileSpawnParams);
 
-	PlayMuzzleFlash();
+	PlayFireEffects();
 	// TODO: override tracer effect with smoke arc
 }
