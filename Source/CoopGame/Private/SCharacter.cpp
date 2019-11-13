@@ -2,6 +2,7 @@
 
 
 #include "SCharacter.h"
+#include "SWeapon.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
@@ -16,6 +17,8 @@ ASCharacter::ASCharacter()
 	// default zoom fov 45
 	ZoomFOV = 45.0f;
 	ZoomInterpSpeed = 15.0f;
+
+	WeaponAttachSocketName = "WeaponSocket";
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
@@ -35,6 +38,29 @@ void ASCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	DefaultFOV = CameraComp->FieldOfView;
+
+	// spawn weapon
+	EquipWeapon(PrimaryWeaponClass);
+}
+
+void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
+{
+	// destroy currently held weapon, if one exists
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Destroy();
+		CurrentWeapon = nullptr;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	CurrentWeapon = GetWorld()->SpawnActor<ASWeapon>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->SetOwner(this);
+		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+	}
 }
 
 // velocity is -1.0 - 1.0
@@ -68,6 +94,14 @@ void ASCharacter::EndZoom()
 	bWantsToZoom = false;
 }
 
+void ASCharacter::FireWeapon()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Fire();
+	}
+}
+
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
@@ -99,6 +133,13 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction("ADS", IE_Pressed, this, &ASCharacter::BeginZoom);
 	PlayerInputComponent->BindAction("ADS", IE_Released, this, &ASCharacter::EndZoom);
+
+	PlayerInputComponent->BindAction("FireWeapon", IE_Pressed, this, &ASCharacter::FireWeapon);
+
+	// from https://qiita.com/suzuki_takashi/items/4ac8d25fe10e3a8b1c4f
+	DECLARE_DELEGATE_OneParam(FWeaponSelectDelegate, TSubclassOf<ASWeapon>);
+	PlayerInputComponent->BindAction<FWeaponSelectDelegate>("EquipPrimaryWeapon", IE_Pressed, this, &ASCharacter::EquipWeapon, PrimaryWeaponClass);
+	PlayerInputComponent->BindAction<FWeaponSelectDelegate>("EquipSecondaryWeapon", IE_Pressed, this, &ASCharacter::EquipWeapon, SecondaryWeaponClass);
 }
 
 // return camera location instead of eye location

@@ -17,10 +17,13 @@ class COOPGAME_API ASWeapon : public AActor
 	GENERATED_BODY()
 	
 public:	
+	static int32 DebugWeaponDrawing;
+	
 	// Sets default values for this actor's properties
 	ASWeapon();
 
-	static int32 DebugWeaponDrawing;
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void Fire();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -44,9 +47,6 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName TracerTargetName;
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Fire();
 
 	void PlayMuzzleFlash();
 

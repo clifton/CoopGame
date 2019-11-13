@@ -8,6 +8,7 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class ASWeapon;
 
 UCLASS()
 class COOPGAME_API ASCharacter : public ACharacter
@@ -17,6 +18,14 @@ class COOPGAME_API ASCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual FVector GetPawnViewLocation() const override;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -36,6 +45,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera", meta = (ClampMin=0.1,ClampMax=100))
 	float ZoomInterpSpeed;
 
+	ASWeapon* CurrentWeapon;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
+	FName WeaponAttachSocketName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<ASWeapon> PrimaryWeaponClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<ASWeapon> SecondaryWeaponClass;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -51,12 +71,7 @@ protected:
 
 	void EndZoom();
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	void FireWeapon();
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual FVector GetPawnViewLocation() const override;
+	void EquipWeapon(TSubclassOf<ASWeapon> WeaponClass);
 };
