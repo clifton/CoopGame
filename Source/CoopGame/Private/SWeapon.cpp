@@ -9,6 +9,13 @@
 #include "Particles/ParticleSystemComponent.h"
 
 
+// console variables
+int32 ASWeapon::DebugWeaponDrawing = 0;
+FAutoConsoleVariableRef CVar_DebugWeaponDrawing(
+	TEXT("COOP.DebugWeapons"), ASWeapon::DebugWeaponDrawing,
+	TEXT("Draw debug geometry for weapon damage"),
+	ECVF_Cheat);
+
 // Sets default values
 ASWeapon::ASWeapon()
 {
@@ -67,7 +74,10 @@ void ASWeapon::Fire()
 		TracerEndPoint = HitResult.ImpactPoint;
 	}
 
-	// DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
+	if (DebugWeaponDrawing > 0)
+	{
+		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
+	}
 
 	FVector MuzzleLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
 

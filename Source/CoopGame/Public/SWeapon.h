@@ -20,6 +20,8 @@ public:
 	// Sets default values for this actor's properties
 	ASWeapon();
 
+	static int32 DebugWeaponDrawing;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent* MeshComp;

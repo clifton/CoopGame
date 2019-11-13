@@ -2,6 +2,7 @@
 
 
 #include "SProjectile.h"
+#include "SWeapon.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -83,8 +84,11 @@ void ASProjectile::OnExplode()
 		}
 	}
 
-	DrawDebugSphere(GetWorld(), BlastLocation, BlastRadius, 12, FColor::Yellow, false, 10.0f);
-	DrawDebugSphere(GetWorld(), BlastLocation, BlastInnerRadius, 12, FColor::Red, false, 10.0f);
+	if (ASWeapon::DebugWeaponDrawing > 0)
+	{
+		DrawDebugSphere(GetWorld(), BlastLocation, BlastRadius, 12, FColor::Yellow, false, 10.0f);
+		DrawDebugSphere(GetWorld(), BlastLocation, BlastInnerRadius, 12, FColor::Red, false, 10.0f);
+	}
 
 	this->Destroy();
 }
