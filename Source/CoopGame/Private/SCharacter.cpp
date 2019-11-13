@@ -15,6 +15,7 @@ ASCharacter::ASCharacter()
 
 	// default zoom fov 45
 	ZoomFOV = 45.0f;
+	ZoomInterpSpeed = 15.0f;
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
@@ -71,9 +72,11 @@ void ASCharacter::EndZoom()
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	float TargetFOV = bWantsToZoom ? ZoomFOV : DefaultFOV;
+	float NewFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
 
-	float CurrentFOV = bWantsToZoom ? ZoomFOV : DefaultFOV;
-	CameraComp->SetFieldOfView(CurrentFOV);
+	CameraComp->SetFieldOfView(NewFOV);
 }
 
 // Called to bind functionality to input

@@ -30,8 +30,11 @@ protected:
 
 	float DefaultFOV;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera", meta = (ClampMin=10.0,ClampMax=90.0))
 	float ZoomFOV;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera", meta = (ClampMin=0.1,ClampMax=100))
+	float ZoomInterpSpeed;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
