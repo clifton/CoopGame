@@ -13,6 +13,9 @@ ASCharacter::ASCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// default zoom fov 45
+	ZoomFOV = 45.0f;
+
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
@@ -29,6 +32,8 @@ ASCharacter::ASCharacter()
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	DefaultFOV = CameraComp->FieldOfView;
 }
 
 // velocity is -1.0 - 1.0
@@ -52,10 +57,23 @@ void ASCharacter::EndCrouch()
 	UnCrouch();
 }
 
+void ASCharacter::BeginZoom()
+{
+	bWantsToZoom = true;
+}
+
+void ASCharacter::EndZoom()
+{
+	bWantsToZoom = false;
+}
+
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	float CurrentFOV = bWantsToZoom ? ZoomFOV : DefaultFOV;
+	CameraComp->SetFieldOfView(CurrentFOV);
 }
 
 // Called to bind functionality to input
@@ -75,6 +93,9 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ASCharacter::EndCrouch);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+
+	PlayerInputComponent->BindAction("ADS", IE_Pressed, this, &ASCharacter::BeginZoom);
+	PlayerInputComponent->BindAction("ADS", IE_Released, this, &ASCharacter::EndZoom);
 }
 
 // return camera location instead of eye location
