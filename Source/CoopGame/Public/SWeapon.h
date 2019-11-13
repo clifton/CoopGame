@@ -45,16 +45,10 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName TracerTargetName;
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Fire();
 
 	void PlayMuzzleFlash();
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	void PlayTracerEffect(const FVector& TracerEndPoint);
 };
