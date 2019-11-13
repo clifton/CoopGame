@@ -7,6 +7,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#include "CoopGame.h"
 
 
 // console variables
@@ -47,20 +49,35 @@ void ASWeapon::Fire()
 	QueryParams.AddIgnoredActor(this);
 	// trace against mesh instead of simple collision boxes
 	QueryParams.bTraceComplex = true;
+	QueryParams.bReturnPhysicalMaterial = true;
 
 	FHitResult HitResult;
 	bool bIsBlockingHit = GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECC_Visibility, QueryParams);
 	if (bIsBlockingHit)
 	{
+		// stop tracer at hit location
+		TracerEndPoint = HitResult.ImpactPoint;
+
 		AActor* HitActor = HitResult.GetActor();
 		UGameplayStatics::ApplyPointDamage(HitActor, 20.0f, ShotDirection, HitResult, MyOwner->GetInstigatorController(), this, DamageType);
 
-		if (ImpactEffect)
+		EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
+		UParticleSystem* SelectedEffect;
+		switch (SurfaceType)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
+		case SURFACE_FLESHDEFAULT:
+		case SURFACE_FLESHVULERNABLE:
+			SelectedEffect = FleshImpactEffect;
+			break;
+		default:
+			SelectedEffect = DefaultImpactEffect;
+			break;
 		}
 
-		TracerEndPoint = HitResult.ImpactPoint;
+		if (SelectedEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedEffect, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
+		}
 	}
 
 	PlayFireEffects(TracerEndPoint);
