@@ -71,7 +71,9 @@ protected:
 
 	void EndZoom();
 
-	void FireWeapon();
+	void StartFireWeapon();
+
+	void EndFireWeapon();
 
 	void EquipWeapon(TSubclassOf<ASWeapon> WeaponClass);
 };

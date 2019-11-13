@@ -94,11 +94,19 @@ void ASCharacter::EndZoom()
 	bWantsToZoom = false;
 }
 
-void ASCharacter::FireWeapon()
+void ASCharacter::StartFireWeapon()
 {
 	if (CurrentWeapon)
 	{
-		CurrentWeapon->Fire();
+		CurrentWeapon->StartFire();
+	}
+}
+
+void ASCharacter::EndFireWeapon()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->EndFire();
 	}
 }
 
@@ -134,7 +142,8 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("ADS", IE_Pressed, this, &ASCharacter::BeginZoom);
 	PlayerInputComponent->BindAction("ADS", IE_Released, this, &ASCharacter::EndZoom);
 
-	PlayerInputComponent->BindAction("FireWeapon", IE_Pressed, this, &ASCharacter::FireWeapon);
+	PlayerInputComponent->BindAction("FireWeapon", IE_Pressed, this, &ASCharacter::StartFireWeapon);
+	PlayerInputComponent->BindAction("FireWeapon", IE_Released, this, &ASCharacter::EndFireWeapon);
 
 	// from https://qiita.com/suzuki_takashi/items/4ac8d25fe10e3a8b1c4f
 	DECLARE_DELEGATE_OneParam(FWeaponSelectDelegate, TSubclassOf<ASWeapon>);

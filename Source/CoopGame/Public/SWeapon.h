@@ -30,7 +30,10 @@ public:
 	ASWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Fire();
+	void StartFire();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EndFire();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -57,5 +60,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShake> FireCamShake;
 
+	FTimerHandle TimerHandle_TimeBetweenShots;
+
+	// bullets per minute fired
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float RateOfFire;
+	float TimeBetweenShots; // derived from RateOfFire
+	float LastFiredTime;
+
+	virtual void Fire();
+
 	void PlayFireEffects(FVector TracerEndPoint = FVector());
+
+	virtual void BeginPlay();
 };
