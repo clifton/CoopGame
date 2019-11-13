@@ -3,6 +3,7 @@
 
 #include "SProjectile.h"
 #include "SWeapon.h"
+#include "CoopGame.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -73,7 +74,7 @@ void ASProjectile::OnExplode()
 
 		TArray<AActor*> IgnoreActors;
 		IgnoreActors.Add(this);
-		bool bDidCauseDamage = UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), BlastDamage, MinimumDamage, BlastLocation, BlastInnerRadius, BlastRadius, DamageFalloff, DamageType, IgnoreActors, this, Instigator->GetController());
+		bool bDidCauseDamage = UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), BlastDamage, MinimumDamage, BlastLocation, BlastInnerRadius, BlastRadius, DamageFalloff, DamageType, IgnoreActors, this, Instigator->GetController(), COLLISION_WEAPON);
 		if (bDidCauseDamage)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Grenade caused damage to actor!"));

@@ -52,7 +52,7 @@ void ASWeapon::Fire()
 	QueryParams.bReturnPhysicalMaterial = true;
 
 	FHitResult HitResult;
-	bool bIsBlockingHit = GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECC_Visibility, QueryParams);
+	bool bIsBlockingHit = GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, COLLISION_WEAPON, QueryParams);
 	if (bIsBlockingHit)
 	{
 		// stop tracer at hit location
