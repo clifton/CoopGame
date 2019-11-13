@@ -59,20 +59,25 @@ void ASWeapon::Fire()
 		TracerEndPoint = HitResult.ImpactPoint;
 
 		AActor* HitActor = HitResult.GetActor();
-		UGameplayStatics::ApplyPointDamage(HitActor, 20.0f, ShotDirection, HitResult, MyOwner->GetInstigatorController(), this, DamageType);
-
 		EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
+
+		float ActualDamage = BaseDamage;
+
 		UParticleSystem* SelectedEffect;
 		switch (SurfaceType)
 		{
-		case SURFACE_FLESHDEFAULT:
 		case SURFACE_FLESHVULERNABLE:
+			// 3x headshot damage
+			ActualDamage *= 3.0f;
+		case SURFACE_FLESHDEFAULT:
 			SelectedEffect = FleshImpactEffect;
 			break;
 		default:
 			SelectedEffect = DefaultImpactEffect;
 			break;
 		}
+
+		UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, HitResult, MyOwner->GetInstigatorController(), this, DamageType);
 
 		if (SelectedEffect)
 		{
