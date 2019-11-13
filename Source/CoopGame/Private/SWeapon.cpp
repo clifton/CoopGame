@@ -77,6 +77,7 @@ void ASWeapon::PlayFireEffects(FVector TracerEndPoint)
 	{
 		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, MuzzleSocketName);
 	}
+
 	if (TracerEffect)
 	{
 		FVector MuzzleLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
@@ -85,5 +86,12 @@ void ASWeapon::PlayFireEffects(FVector TracerEndPoint)
 		{
 			TracerComp->SetVectorParameter("Target", TracerEndPoint);
 		}
+	}
+
+	APawn* MyOwner = Cast<APawn>(GetOwner());
+	if (MyOwner && FireCamShake)
+	{
+		APlayerController* PC = Cast<APlayerController>(MyOwner->GetController());
+		if (PC) PC->ClientPlayCameraShake(FireCamShake);
 	}
 }
