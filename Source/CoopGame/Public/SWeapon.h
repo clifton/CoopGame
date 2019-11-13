@@ -17,16 +17,27 @@ class COOPGAME_API ASWeapon : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
-	ASWeapon();
+	static int32 DebugWeaponDrawing;
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USkeletalMeshComponent* MeshComp;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float BaseDamage;
 
 	// could be extended to support different damage types
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<UDamageType> DamageType;
+	
+	// Sets default values for this actor's properties
+	ASWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void StartFire();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EndFire();
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USkeletalMeshComponent* MeshComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* MuzzleEffect;
@@ -35,7 +46,10 @@ protected:
 	FName MuzzleSocketName;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	UParticleSystem* ImpactEffect;
+	UParticleSystem* DefaultImpactEffect;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UParticleSystem* FleshImpactEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* TracerEffect;
@@ -43,16 +57,20 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName TracerTargetName;
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<UCameraShake> FireCamShake;
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	FTimerHandle TimerHandle_TimeBetweenShots;
+
+	// bullets per minute fired
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float RateOfFire;
+	float TimeBetweenShots; // derived from RateOfFire
+	float LastFiredTime;
+
 	virtual void Fire();
 
-	void PlayMuzzleFlash();
+	void PlayFireEffects(FVector TracerEndPoint = FVector());
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	virtual void BeginPlay();
 };

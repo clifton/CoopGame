@@ -14,27 +14,22 @@ void ASProjectileWeapon::Fire()
 	if (MyCharacter == nullptr) return;
 	if (ProjectileClass == nullptr) return;
 
+	FVector EyeLocation;
+	FRotator EyeRotation;
+	MyCharacter->GetActorEyesViewPoint(EyeLocation, EyeRotation);
+
 	FVector MuzzleLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
 	FRotator MuzzleRotation = MeshComp->GetSocketRotation(MuzzleSocketName);
 
 	//Set Spawn Collision Handling Override
 	FActorSpawnParameters ProjectileSpawnParams;
-	ProjectileSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+	ProjectileSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	ProjectileSpawnParams.Instigator = MyCharacter;
+	ProjectileSpawnParams.Owner = this;
 
 	// spawn the projectile at the muzzle
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, MuzzleRotation, ProjectileSpawnParams);
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, EyeRotation, ProjectileSpawnParams);
 
-	PlayMuzzleFlash();
-
-// 	FVector EyeLocation;
-// 	FRotator EyeRotation;
-// 	MyCharacter->GetActorEyesViewPoint(EyeLocation, EyeRotation);
-
-	// FVector ShotDirection = EyeRotation.Vector();
-
-	// straight line
-	// FVector TraceEnd = EyeLocation + (ShotDirection * 10000);
-
-	// DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
+	PlayFireEffects();
+	// TODO: override tracer effect with smoke arc
 }
