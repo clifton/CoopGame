@@ -23,16 +23,22 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnHealthChangedSignature OnDeath;
+
 	USHealthComponent();
 
 protected:
-	virtual void BeginPlay() override;
-
 	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent")
 	float Health;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HealthComponent")
 	float DefaultHealth;
+
+	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent")
+	bool bIsDead;
+
+	virtual void BeginPlay() override;
 
 	UFUNCTION()
 	void HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
