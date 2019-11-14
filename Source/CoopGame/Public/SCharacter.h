@@ -9,6 +9,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class ASWeapon;
+class USHealthComponent;
 
 UCLASS()
 class COOPGAME_API ASCharacter : public ACharacter
@@ -34,6 +35,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArmComp;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HealthComponent")
+	USHealthComponent* HealthComp;
+
 	// aim down sights
 	bool bWantsToZoom;
 
@@ -56,6 +60,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
 	TSubclassOf<ASWeapon> SecondaryWeaponClass;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	bool bDied;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -76,4 +83,10 @@ protected:
 	void EndFireWeapon();
 
 	void EquipWeapon(TSubclassOf<ASWeapon> WeaponClass);
+
+	UFUNCTION()
+	void OnHealthChanged(
+		USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
+		const class UDamageType* DamageType,
+		class AController* InstigatedBy, AActor* DamageCauser);
 };

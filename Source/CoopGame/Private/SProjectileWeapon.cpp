@@ -32,4 +32,7 @@ void ASProjectileWeapon::Fire()
 
 	PlayFireEffects();
 	// TODO: override tracer effect with smoke arc
+
+	// repeating myself... should clean this up
+	LastFiredTime = GetWorld()->TimeSeconds;
 }
