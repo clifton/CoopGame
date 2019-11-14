@@ -81,6 +81,7 @@ void ASCharacter::OnDeath(
 {
 	bDied = true;
 	GetMovementComponent()->StopMovementImmediately();
+	EndFireWeapon(); // stop firing weapon
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	DetachFromControllerPendingDestroy();
