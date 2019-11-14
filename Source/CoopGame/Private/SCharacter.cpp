@@ -3,7 +3,9 @@
 
 #include "SCharacter.h"
 #include "SWeapon.h"
+#include "CoopGame.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 
@@ -19,6 +21,9 @@ ASCharacter::ASCharacter()
 	ZoomInterpSpeed = 15.0f;
 
 	WeaponAttachSocketName = "WeaponSocket";
+
+	// capsule component should ignore weapon collision channel, pass through to skeletal mesh
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
