@@ -85,7 +85,7 @@ protected:
 	void EquipWeapon(TSubclassOf<ASWeapon> WeaponClass);
 
 	UFUNCTION()
-	void OnHealthChanged(
+	void OnDeath(
 		USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 		const class UDamageType* DamageType,
 		class AController* InstigatedBy, AActor* DamageCauser);

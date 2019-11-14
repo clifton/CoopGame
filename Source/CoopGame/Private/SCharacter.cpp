@@ -51,7 +51,7 @@ void ASCharacter::BeginPlay()
 	// spawn weapon
 	EquipWeapon(PrimaryWeaponClass);
 
-	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
+	HealthComp->OnDeath.AddDynamic(this, &ASCharacter::OnDeath);
 }
 
 void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
@@ -74,21 +74,18 @@ void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 	}
 }
 
-void ASCharacter::OnHealthChanged(
+void ASCharacter::OnDeath(
 	USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 	const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
-	if (Health <= 0.0f && !bDied)
-	{
-		bDied = true;
-		UE_LOG(LogTemp, Log, TEXT("Pawn died"));
-		GetMovementComponent()->StopMovementImmediately();
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	bDied = true;
+	GetMovementComponent()->StopMovementImmediately();
+	EndFireWeapon(); // stop firing weapon
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		DetachFromControllerPendingDestroy();
-		SetLifeSpan(10.0f);
-	}
+	DetachFromControllerPendingDestroy();
+	SetLifeSpan(10.0f);
 }
 
 // velocity is -1.0 - 1.0

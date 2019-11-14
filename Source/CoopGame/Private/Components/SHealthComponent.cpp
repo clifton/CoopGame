@@ -17,6 +17,7 @@ void USHealthComponent::BeginPlay()
 	MyOwner->OnTakeAnyDamage.AddDynamic(this, &USHealthComponent::HandleTakeAnyDamage);
 
 	Health = DefaultHealth;
+	bIsDead = false;
 }
 
 void USHealthComponent::HandleTakeAnyDamage(
@@ -29,4 +30,10 @@ void USHealthComponent::HandleTakeAnyDamage(
 	UE_LOG(LogTemp, Log, TEXT("Health changed: %s"), *FString::SanitizeFloat(Health));
 
 	OnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
+
+	if (Health <= 0.0f && !bIsDead)
+	{
+		bIsDead = true;
+		OnDeath.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
+	}
 }
