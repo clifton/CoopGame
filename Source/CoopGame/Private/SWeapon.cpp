@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SWeapon.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "DrawDebugHelpers.h"
@@ -10,6 +7,7 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "CoopGame.h"
 #include "TimerManager.h"
+#include "Net/UnrealNetwork.h"
 
 
 // console variables
@@ -19,7 +17,6 @@ FAutoConsoleVariableRef CVar_DebugWeaponDrawing(
 	TEXT("Draw debug geometry for weapon damage"),
 	ECVF_Cheat);
 
-// Sets default values
 ASWeapon::ASWeapon()
 {
 	MeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MeshComp"));
@@ -27,6 +24,8 @@ ASWeapon::ASWeapon()
 
 	MuzzleSocketName = "MuzzleSocket";
 	TracerTargetName = "Target";
+
+	SetReplicates(true);
 }
 
 void ASWeapon::BeginPlay()
@@ -48,8 +47,25 @@ void ASWeapon::EndFire()
 	GetWorldTimerManager().ClearTimer(TimerHandle_TimeBetweenShots);
 }
 
+void ASWeapon::ServerFire_Implementation()
+{
+	Fire();
+}
+
+bool ASWeapon::ServerFire_Validate()
+{
+	// sanity check / anti-cheat
+	return true;
+}
+
 void ASWeapon::Fire()
 {
+	if (Role < ROLE_Authority)
+	{
+		ServerFire();
+		return;
+	}
+
 	AActor* MyOwner = GetOwner();
 	if (MyOwner == nullptr) return;
 
@@ -105,7 +121,10 @@ void ASWeapon::Fire()
 		}
 	}
 
-	PlayFireEffects(TracerEndPoint);
+	if (Role == ROLE_Authority)
+	{
+		HitScanTrace.TraceEnd = TracerEndPoint;
+	}
 
 	if (DebugWeaponDrawing > 0)
 	{
@@ -138,4 +157,17 @@ void ASWeapon::PlayFireEffects(FVector TracerEndPoint)
 		APlayerController* PC = Cast<APlayerController>(MyOwner->GetController());
 		if (PC) PC->ClientPlayCameraShake(FireCamShake);
 	}
+}
+
+void ASWeapon::OnRep_HitScanTrace()
+{
+	// play cosmetic fx
+	PlayFireEffects(HitScanTrace.TraceEnd);
+}
+
+void ASWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(ASWeapon, HitScanTrace, COND_SkipOwner);
 }

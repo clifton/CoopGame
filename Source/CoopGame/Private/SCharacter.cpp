@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SCharacter.h"
 #include "SWeapon.h"
 #include "CoopGame.h"
@@ -9,12 +6,11 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
-// Sets default values
 ASCharacter::ASCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// default zoom fov 45
@@ -46,16 +42,20 @@ void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	DefaultFOV = CameraComp->FieldOfView;
-
-	// spawn weapon
-	EquipWeapon(PrimaryWeaponClass);
-
 	HealthComp->OnDeath.AddDynamic(this, &ASCharacter::OnDeath);
+	DefaultFOV = CameraComp->FieldOfView;
+	
+	EquipWeapon(PrimaryWeaponClass);
 }
 
 void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 {
+	// only run this code on the server
+	if (Role != ROLE_Authority)
+	{
+		return;
+	}
+
 	// destroy currently held weapon, if one exists
 	if (CurrentWeapon)
 	{
@@ -184,3 +184,9 @@ FVector ASCharacter::GetPawnViewLocation() const
 	return CameraComp->GetComponentLocation();
 }
 
+void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASCharacter, CurrentWeapon);
+}
