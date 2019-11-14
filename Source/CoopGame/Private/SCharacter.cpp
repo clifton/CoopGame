@@ -4,6 +4,7 @@
 #include "SCharacter.h"
 #include "SWeapon.h"
 #include "CoopGame.h"
+#include "Components/SHealthComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -32,6 +33,9 @@ ASCharacter::ASCharacter()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComp->SetupAttachment(SpringArmComp);
 
+	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComponent"));
+	bDied = false;
+
 	// kinda bizarre, nav agent properties usually reserved for AI, but needed to enable jumping/crouching
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanJump = true;
@@ -46,6 +50,8 @@ void ASCharacter::BeginPlay()
 
 	// spawn weapon
 	EquipWeapon(PrimaryWeaponClass);
+
+	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
 void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
@@ -65,6 +71,23 @@ void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 	{
 		CurrentWeapon->SetOwner(this);
 		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+	}
+}
+
+void ASCharacter::OnHealthChanged(
+	USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
+	const class UDamageType* DamageType,
+	class AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (Health <= 0.0f && !bDied)
+	{
+		bDied = true;
+		UE_LOG(LogTemp, Log, TEXT("Pawn died"));
+		GetMovementComponent()->StopMovementImmediately();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		DetachFromControllerPendingDestroy();
+		SetLifeSpan(10.0f);
 	}
 }
 
