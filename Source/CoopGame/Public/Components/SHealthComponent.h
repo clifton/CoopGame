@@ -20,6 +20,9 @@ class COOPGAME_API USHealthComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HealthComponent")
+	float DefaultHealth;
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;
 
@@ -31,9 +34,6 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent")
 	float Health;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HealthComponent")
-	float DefaultHealth;
 
 	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent")
 	bool bIsDead;
