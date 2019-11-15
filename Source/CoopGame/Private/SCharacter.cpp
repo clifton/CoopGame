@@ -42,7 +42,12 @@ void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HealthComp->OnDeath.AddDynamic(this, &ASCharacter::OnDeath);
+	// redundant but helpful to document behavior
+	if (Role == ROLE_Authority)
+	{
+		HealthComp->OnDeath.AddDynamic(this, &ASCharacter::OnDeath);
+	}
+
 	DefaultFOV = CameraComp->FieldOfView;
 	
 	EquipWeapon(PrimaryWeaponClass);
@@ -199,4 +204,5 @@ void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ASCharacter, CurrentWeapon);
+	DOREPLIFETIME(ASCharacter, bDied);
 }

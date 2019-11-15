@@ -1,23 +1,29 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Components/SHealthComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
 USHealthComponent::USHealthComponent()
 {
 	DefaultHealth = 100.0f;
+
+	SetIsReplicated(true);
 }
 
 void USHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AActor* MyOwner = GetOwner();
-	if (!MyOwner) return;
-	
-	MyOwner->OnTakeAnyDamage.AddDynamic(this, &USHealthComponent::HandleTakeAnyDamage);
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		AActor* MyOwner = GetOwner();
+		if (!MyOwner) return;
 
-	Health = DefaultHealth;
-	bIsDead = false;
+		MyOwner->OnTakeAnyDamage.AddDynamic(this, &USHealthComponent::HandleTakeAnyDamage);
+
+		Health = DefaultHealth;
+		bIsDead = false;
+	}
 }
 
 void USHealthComponent::HandleTakeAnyDamage(
@@ -36,4 +42,12 @@ void USHealthComponent::HandleTakeAnyDamage(
 		bIsDead = true;
 		OnDeath.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 	}
+}
+
+void USHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USHealthComponent, Health);
+	DOREPLIFETIME(USHealthComponent, bIsDead);
 }
