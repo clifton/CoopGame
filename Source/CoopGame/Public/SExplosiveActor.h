@@ -30,6 +30,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	URadialForceComponent* RadialForceComp;
 
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_bExploded, Category = "Explosion")
 	bool bExploded;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Explosion")
@@ -48,10 +49,15 @@ protected:
 	UMaterialInterface* ExplodedMaterial;
 
 	UFUNCTION()
-	void OnDeath(
+	void ServerOnDeath(
 		USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 		const class UDamageType* DamageType,
 		class AController* InstigatedBy, AActor* DamageCauser);
+
+	UFUNCTION()
+	void OnRep_bExploded();
+
+	void PlayExplosionEffects();
 
 	virtual void BeginPlay() override;
 

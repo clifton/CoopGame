@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SCharacter.h"
 #include "SWeapon.h"
 #include "CoopGame.h"
@@ -9,12 +6,11 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
-// Sets default values
 ASCharacter::ASCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// default zoom fov 45
@@ -46,16 +42,25 @@ void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// redundant but helpful to document behavior
+	if (Role == ROLE_Authority)
+	{
+		HealthComp->ServerOnDeath.AddDynamic(this, &ASCharacter::ServerOnDeath);
+	}
+
 	DefaultFOV = CameraComp->FieldOfView;
-
-	// spawn weapon
+	
 	EquipWeapon(PrimaryWeaponClass);
-
-	HealthComp->OnDeath.AddDynamic(this, &ASCharacter::OnDeath);
 }
 
 void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 {
+	// run this code on controlling client and server
+	if (Role != ROLE_Authority)
+	{
+		ServerEquipWeapon(WeaponClass);
+	}
+
 	// destroy currently held weapon, if one exists
 	if (CurrentWeapon)
 	{
@@ -74,7 +79,17 @@ void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 	}
 }
 
-void ASCharacter::OnDeath(
+void ASCharacter::ServerEquipWeapon_Implementation(TSubclassOf<ASWeapon> WeaponClass)
+{
+	EquipWeapon(WeaponClass);
+}
+
+bool ASCharacter::ServerEquipWeapon_Validate(TSubclassOf<ASWeapon> WeaponClass)
+{
+	return true;
+}
+
+void ASCharacter::ServerOnDeath(
 	USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 	const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
@@ -84,8 +99,13 @@ void ASCharacter::OnDeath(
 	EndFireWeapon(); // stop firing weapon
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	DetachFromControllerPendingDestroy();
 	SetLifeSpan(10.0f);
+	DetachFromControllerPendingDestroy();
+
+	// TFunction / lambda example
+	// 	GetWorldTimerManager().SetTimerForNextTick([this]() {
+	// 		DetachFromControllerPendingDestroy();
+	// 	});
 }
 
 // velocity is -1.0 - 1.0
@@ -184,3 +204,10 @@ FVector ASCharacter::GetPawnViewLocation() const
 	return CameraComp->GetComponentLocation();
 }
 
+void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASCharacter, CurrentWeapon);
+	DOREPLIFETIME(ASCharacter, bDied);
+}

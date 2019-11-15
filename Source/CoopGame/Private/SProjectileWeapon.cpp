@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SProjectileWeapon.h"
 #include "DrawDebugHelpers.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -10,6 +7,11 @@
 
 void ASProjectileWeapon::Fire()
 {
+	if (Role < ROLE_Authority)
+	{
+		ServerFire();
+	}
+
 	ASCharacter* MyCharacter = Cast<ASCharacter>(GetOwner());
 	if (MyCharacter == nullptr) return;
 	if (ProjectileClass == nullptr) return;
@@ -31,8 +33,11 @@ void ASProjectileWeapon::Fire()
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, EyeRotation, ProjectileSpawnParams);
 
 	PlayFireEffects();
-	// TODO: override tracer effect with smoke arc
-
-	// repeating myself... should clean this up
+	
 	LastFiredTime = GetWorld()->TimeSeconds;
+
+	if (Role == ROLE_Authority)
+	{
+		HitScanTrace.LastFiredTime = LastFiredTime;
+	}
 }

@@ -14,6 +14,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(
 	const class UDamageType*, DamageType,
 	class AController*, InstigatedBy, AActor*, DamageCauser);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+	FClientOnHealthChangedSignature,
+	float, Health);
+
 UCLASS( ClassGroup=(COOP), meta=(BlueprintSpawnableComponent) )
 class COOPGAME_API USHealthComponent : public UActorComponent
 {
@@ -24,22 +28,29 @@ public:
 	float DefaultHealth;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnHealthChangedSignature OnHealthChanged;
+	FOnHealthChangedSignature ServerOnHealthChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnHealthChangedSignature OnDeath;
+	FOnHealthChangedSignature ServerOnDeath;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FClientOnHealthChangedSignature ClientOnHealthChanged;
 
 	USHealthComponent();
 
 protected:
-	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent")
+	UPROPERTY(ReplicatedUsing = OnRep_Health, BlueprintReadOnly, Category = "HealthComponent")
 	float Health;
 
-	UPROPERTY(BlueprintReadOnly, Category = "HealthComponent")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "HealthComponent")
 	bool bIsDead;
 
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void ServerHandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+	// only called on clients
+	UFUNCTION()
+	void OnRep_Health();
 };

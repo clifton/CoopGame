@@ -49,6 +49,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera", meta = (ClampMin=0.1,ClampMax=100))
 	float ZoomInterpSpeed;
 
+	UPROPERTY(Replicated)
 	ASWeapon* CurrentWeapon;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
@@ -60,7 +61,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
 	TSubclassOf<ASWeapon> SecondaryWeaponClass;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
 	bool bDied;
 
 	// Called when the game starts or when spawned
@@ -84,8 +85,11 @@ protected:
 
 	void EquipWeapon(TSubclassOf<ASWeapon> WeaponClass);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerEquipWeapon(TSubclassOf<ASWeapon> WeaponClass);
+
 	UFUNCTION()
-	void OnDeath(
+	void ServerOnDeath(
 		USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 		const class UDamageType* DamageType,
 		class AController* InstigatedBy, AActor* DamageCauser);

@@ -14,6 +14,7 @@ ASProjectile::ASProjectile()
 {
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComp->SetIsReplicated(true);
 
 	// TODO: set relative rotation?
 
@@ -35,12 +36,17 @@ ASProjectile::ASProjectile()
 	ProjectileMovement->MaxSpeed = 3000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = true;
+	ProjectileMovement->SetIsReplicated(true);
 
 	ProjectileLifespan = 1.0f;
 	BlastRadius = 300.0f;
 
-// 	SetReplicates(true);
-// 	SetReplicateMovement(true);
+ 	SetReplicates(true);
+ 	SetReplicateMovement(true);
+
+	// set tick rate
+	NetUpdateFrequency = 66.0f;
+	MinNetUpdateFrequency = 33.0f;
 }
 
 void ASProjectile::BeginPlay()
@@ -57,18 +63,31 @@ void ASProjectile::OnExplode()
 		UGameplayStatics::SpawnEmitterAtLocation(this, ExplosionFX, GetActorLocation());
 	}
 
+	FVector BlastLocation = GetActorLocation();
+	float BlastInnerRadius = BlastRadius * 0.25f;
+
+	if (ASWeapon::DebugWeaponDrawing > 0)
+	{
+		DrawDebugSphere(GetWorld(), BlastLocation, BlastRadius, 12, FColor::Yellow, false, 10.0f);
+		DrawDebugSphere(GetWorld(), BlastLocation, BlastInnerRadius, 12, FColor::Red, false, 10.0f);
+	}
+
+	if (Role < ROLE_Authority)
+	{
+		ServerExplode();
+		return;
+	}
+
 	ASWeapon* Weapon = Cast<ASWeapon>(GetOwner());
 	if (Weapon)
 	{
 		// do damage
 		float BlastDamage = Weapon->BaseDamage;
 		float MinimumDamage = BlastDamage * 0.1f;
-		float BlastInnerRadius = BlastRadius * 0.25f;
 		float DamageFalloff = 1.0f; // linear
 
 		// grenade visibility channel blocking damage application
 		float ZOffset = 50.0f; // FMath::Max(CollisionComp->GetScaledCapsuleRadius(), CollisionComp->GetScaledCapsuleHalfHeight() * 2.0f) * 2.0f;
-		FVector BlastLocation = GetActorLocation(); // +FVector(0.0f, 0.0f, ZOffset);
 
 		if (Instigator) {
 			// UE_LOG(LogTemp, Warning, TEXT("Instigator: %s"), *AActor::GetDebugName(Instigator));
@@ -89,13 +108,17 @@ void ASProjectile::OnExplode()
 				UE_LOG(LogTemp, Warning, TEXT("Grenade missed!"));
 			}
 		}
-
-		if (ASWeapon::DebugWeaponDrawing > 0)
-		{
-			DrawDebugSphere(GetWorld(), BlastLocation, BlastRadius, 12, FColor::Yellow, false, 10.0f);
-			DrawDebugSphere(GetWorld(), BlastLocation, BlastInnerRadius, 12, FColor::Red, false, 10.0f);
-		}
 	}
 
 	this->Destroy();
+}
+
+bool ASProjectile::ServerExplode_Validate()
+{
+	return true;
+}
+
+void ASProjectile::ServerExplode_Implementation()
+{
+	OnExplode();
 }
