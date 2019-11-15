@@ -41,12 +41,12 @@ void ASExplosiveActor::BeginPlay()
 
 	if (Role == ROLE_Authority)
 	{
-		HealthComp->OnDeath.AddDynamic(this, &ASExplosiveActor::OnDeath);
+		HealthComp->ServerOnDeath.AddDynamic(this, &ASExplosiveActor::ServerOnDeath);
 	}
 }
 
 // only runs on server
-void ASExplosiveActor::OnDeath(USHealthComponent* ChangedHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+void ASExplosiveActor::ServerOnDeath(USHealthComponent* ChangedHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
 	// already exploded
 	if (bExploded) return;

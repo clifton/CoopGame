@@ -26,7 +26,7 @@ protected:
 	UParticleSystem* DestroyedFX;
 
 	UFUNCTION()
-	void OnDeath(
+	void ServerOnDeath(
 		USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 		const class UDamageType* DamageType,
 		class AController* InstigatedBy, AActor* DamageCauser);

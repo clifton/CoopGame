@@ -13,10 +13,10 @@ void ASDestroyableActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HealthComp->OnDeath.AddDynamic(this, &ASDestroyableActor::OnDeath);
+	HealthComp->ServerOnDeath.AddDynamic(this, &ASDestroyableActor::ServerOnDeath);
 }
 
-void ASDestroyableActor::OnDeath(
+void ASDestroyableActor::ServerOnDeath(
 	USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
