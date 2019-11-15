@@ -103,15 +103,20 @@ void ASWeapon::Fire()
 		AActor* HitActor = HitResult.GetActor();
 		SurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
 
-		float ActualDamage = BaseDamage;
-
-		if (SurfaceType == SURFACE_FLESHVULERNABLE)
+		if (Role == ROLE_Authority)
 		{
-			ActualDamage *= 3.0f;
-		}
+			float ActualDamage = BaseDamage;
 
-		UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, HitResult, MyOwner->GetInstigatorController(), this, DamageType);
+			if (SurfaceType == SURFACE_FLESHVULERNABLE)
+			{
+				ActualDamage *= 3.0f;
+			}
+
+			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, HitResult, MyOwner->GetInstigatorController(), this, DamageType);
+		}
 	}
+
+	LastFiredTime = GetWorld()->TimeSeconds;
 
 	PlayFireEffects(TraceTo);
 	PlayImpactEffects(SurfaceType, TraceTo);
@@ -120,14 +125,14 @@ void ASWeapon::Fire()
 	{
 		HitScanTrace.TraceTo = TraceTo;
 		HitScanTrace.SurfaceType = SurfaceType;
+		// used to force updates
+		HitScanTrace.LastFiredTime = LastFiredTime;
 	}
 
 	if (DebugWeaponDrawing > 0)
 	{
 		DrawDebugLine(GetWorld(), EyeLocation, TraceEnd, FColor::White, false, 1.0f, 0, 1.0f);
 	}
-
-	LastFiredTime = GetWorld()->TimeSeconds;
 }
 
 void ASWeapon::PlayFireEffects(FVector TracerEndPoint)
@@ -148,7 +153,7 @@ void ASWeapon::PlayFireEffects(FVector TracerEndPoint)
 	}
 
 	APawn* MyOwner = Cast<APawn>(GetOwner());
-	if (MyOwner && FireCamShake)
+	if (MyOwner && FireCamShake && MyOwner->IsLocallyControlled())
 	{
 		APlayerController* PC = Cast<APlayerController>(MyOwner->GetController());
 		if (PC) PC->ClientPlayCameraShake(FireCamShake);

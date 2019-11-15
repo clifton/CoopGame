@@ -24,6 +24,9 @@ public:
 
 	UPROPERTY()
 	FVector_NetQuantize TraceTo;
+
+	UPROPERTY()
+	float LastFiredTime;
 };
 
 UCLASS()
