@@ -45,7 +45,7 @@ void ASCharacter::BeginPlay()
 	// redundant but helpful to document behavior
 	if (Role == ROLE_Authority)
 	{
-		HealthComp->OnDeath.AddDynamic(this, &ASCharacter::OnDeath);
+		HealthComp->ServerOnDeath.AddDynamic(this, &ASCharacter::ServerOnDeath);
 	}
 
 	DefaultFOV = CameraComp->FieldOfView;
@@ -89,7 +89,7 @@ bool ASCharacter::ServerEquipWeapon_Validate(TSubclassOf<ASWeapon> WeaponClass)
 	return true;
 }
 
-void ASCharacter::OnDeath(
+void ASCharacter::ServerOnDeath(
 	USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 	const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
