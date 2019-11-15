@@ -50,10 +50,10 @@ void ASCharacter::BeginPlay()
 
 void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 {
-	// only run this code on the server
+	// run this code on controlling client and server
 	if (Role != ROLE_Authority)
 	{
-		return;
+		ServerEquipWeapon(WeaponClass);
 	}
 
 	// destroy currently held weapon, if one exists
@@ -72,6 +72,16 @@ void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 		CurrentWeapon->SetOwner(this);
 		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
 	}
+}
+
+void ASCharacter::ServerEquipWeapon_Implementation(TSubclassOf<ASWeapon> WeaponClass)
+{
+	EquipWeapon(WeaponClass);
+}
+
+bool ASCharacter::ServerEquipWeapon_Validate(TSubclassOf<ASWeapon> WeaponClass)
+{
+	return true;
 }
 
 void ASCharacter::OnDeath(

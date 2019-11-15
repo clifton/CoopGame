@@ -85,6 +85,9 @@ protected:
 
 	void EquipWeapon(TSubclassOf<ASWeapon> WeaponClass);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerEquipWeapon(TSubclassOf<ASWeapon> WeaponClass);
+
 	UFUNCTION()
 	void OnDeath(
 		USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
