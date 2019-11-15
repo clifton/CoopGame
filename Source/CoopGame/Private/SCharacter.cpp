@@ -99,8 +99,13 @@ void ASCharacter::ServerOnDeath(
 	EndFireWeapon(); // stop firing weapon
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	DetachFromControllerPendingDestroy();
 	SetLifeSpan(10.0f);
+	DetachFromControllerPendingDestroy();
+
+	// TFunction / lambda example
+	// 	GetWorldTimerManager().SetTimerForNextTick([this]() {
+	// 		DetachFromControllerPendingDestroy();
+	// 	});
 }
 
 // velocity is -1.0 - 1.0
