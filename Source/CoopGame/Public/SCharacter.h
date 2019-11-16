@@ -61,7 +61,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
 	TSubclassOf<ASWeapon> SecondaryWeaponClass;
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
+	UPROPERTY(ReplicatedUsing=OnRep_bDied, BlueprintReadOnly, Category = "Player")
 	bool bDied;
 
 	// Called when the game starts or when spawned
@@ -93,4 +93,7 @@ protected:
 		USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 		const class UDamageType* DamageType,
 		class AController* InstigatedBy, AActor* DamageCauser);
+
+	UFUNCTION()
+	void OnRep_bDied();
 };

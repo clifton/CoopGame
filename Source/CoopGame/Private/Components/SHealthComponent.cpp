@@ -35,6 +35,7 @@ void USHealthComponent::ServerHandleTakeAnyDamage(
 	Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
 	UE_LOG(LogTemp, Log, TEXT("Health changed: %s"), *FString::SanitizeFloat(Health));
 
+	ClientOnHealthChanged.Broadcast(Health);
 	ServerOnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 
 	if (Health <= 0.0f && !bIsDead)
@@ -44,6 +45,7 @@ void USHealthComponent::ServerHandleTakeAnyDamage(
 	}
 }
 
+// fired only on clients
 void USHealthComponent::OnRep_Health()
 {
 	ClientOnHealthChanged.Broadcast(Health);
