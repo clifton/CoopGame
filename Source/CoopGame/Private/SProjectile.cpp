@@ -4,6 +4,7 @@
 #include "CoopGame.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "PhysicsEngine/RadialForceComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -12,6 +13,9 @@
 // Sets default values
 ASProjectile::ASProjectile()
 {
+	ProjectileLifespan = 1.0f;
+	BlastRadius = 300.0f;
+
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MeshComp->SetIsReplicated(true);
@@ -26,6 +30,14 @@ ASProjectile::ASProjectile()
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;
 
+	RadialForceComp = CreateDefaultSubobject<URadialForceComponent>(TEXT("RadialForceComp"));
+	RadialForceComp->SetupAttachment(MeshComp);
+	RadialForceComp->bImpulseVelChange = true;
+	RadialForceComp->bAutoActivate = false;
+	RadialForceComp->bIgnoreOwningActor = true;
+	RadialForceComp->Radius = BlastRadius;
+	RadialForceComp->ImpulseStrength = 100.0f;
+
 	MeshComp->SetupAttachment(CollisionComp);
 	RootComponent = CollisionComp;
 
@@ -37,9 +49,6 @@ ASProjectile::ASProjectile()
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = true;
 	ProjectileMovement->SetIsReplicated(true);
-
-	ProjectileLifespan = 1.0f;
-	BlastRadius = 300.0f;
 
  	SetReplicates(true);
  	SetReplicateMovement(true);
@@ -108,6 +117,12 @@ void ASProjectile::OnExplode()
 				UE_LOG(LogTemp, Warning, TEXT("Grenade missed!"));
 			}
 		}
+	}
+
+	if (RadialForceComp->ImpulseStrength > 0.0f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Firing impulse!"));
+		RadialForceComp->FireImpulse();
 	}
 
 	this->Destroy();

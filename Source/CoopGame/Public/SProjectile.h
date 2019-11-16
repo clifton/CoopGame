@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,6 +5,7 @@
 #include "SProjectile.generated.h"
 
 
+class URadialForceComponent;
 class UCapsuleComponent;
 class UProjectileMovementComponent;
 
@@ -22,6 +21,9 @@ protected:
 	/** Sphere collision component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCapsuleComponent* CollisionComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	URadialForceComponent* RadialForceComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
 	float ProjectileLifespan;
