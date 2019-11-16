@@ -55,6 +55,12 @@ void ASCharacter::BeginPlay()
 
 void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 {
+	if (CurrentWeapon && CurrentWeapon->GetClass() == WeaponClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("tried to equip same weapon"));
+		return;
+	}
+
 	// run this code on controlling client and server
 	if (Role != ROLE_Authority)
 	{
