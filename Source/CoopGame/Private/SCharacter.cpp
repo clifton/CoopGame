@@ -59,6 +59,7 @@ void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 	if (Role != ROLE_Authority)
 	{
 		ServerEquipWeapon(WeaponClass);
+		return;
 	}
 
 	// destroy currently held weapon, if one exists
@@ -96,7 +97,7 @@ void ASCharacter::ServerOnDeath(
 {
 	bDied = true;
 	GetMovementComponent()->StopMovementImmediately();
-	EndFireWeapon(); // stop firing weapon
+	EndFireWeapon(); // stop firing weapon (only on server)
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	SetLifeSpan(10.0f);
@@ -106,6 +107,15 @@ void ASCharacter::ServerOnDeath(
 	// 	GetWorldTimerManager().SetTimerForNextTick([this]() {
 	// 		DetachFromControllerPendingDestroy();
 	// 	});
+}
+
+// client specific death stuff
+void ASCharacter::OnRep_bDied()
+{
+	if (bDied)
+	{
+		EndFireWeapon();
+	}
 }
 
 // velocity is -1.0 - 1.0
