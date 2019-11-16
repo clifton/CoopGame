@@ -14,9 +14,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(
 	const class UDamageType*, DamageType,
 	class AController*, InstigatedBy, AActor*, DamageCauser);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	FClientOnHealthChangedSignature,
-	float, Health);
+	USHealthComponent*, HealthComp, float, Health);
 
 UCLASS( ClassGroup=(COOP), meta=(BlueprintSpawnableComponent) )
 class COOPGAME_API USHealthComponent : public UActorComponent
