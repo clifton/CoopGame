@@ -13,7 +13,7 @@ void ASDestroyableActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HealthComp->ServerOnDeath.AddDynamic(this, &ASDestroyableActor::ServerOnDeath);
+	HealthComp->OnDeath.AddDynamic(this, &ASDestroyableActor::ServerOnDeath);
 }
 
 void ASDestroyableActor::ServerOnDeath(
