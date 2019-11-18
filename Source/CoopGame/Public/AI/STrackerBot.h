@@ -34,7 +34,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	USHealthComponent* HealthComp;
 
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	UParticleSystem* ExplosionFX;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	float RadialDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	float DamageRadius;
+
 	FVector NextPathPoint;
+
+	bool bExploded;
 
 	// dynamic material to pulse on damage
 	UMaterialInstanceDynamic* MatInst;
@@ -48,6 +59,8 @@ protected:
 	void OnHealthChanged(USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 		const class UDamageType* DamageType,
 		class AController* InstigatedBy, AActor* DamageCauser);
+
+	void SelfDestruct();
 
 public:	
 

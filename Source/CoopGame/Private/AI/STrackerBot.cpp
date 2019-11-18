@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DrawDebugHelpers.h"
 #include "Components/SHealthComponent.h"
+#include "CoopGame.h"
 
 
 ASTrackerBot::ASTrackerBot()
@@ -18,12 +19,15 @@ ASTrackerBot::ASTrackerBot()
 	MeshComp->SetSimulatePhysics(true);
 
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
-	HealthComp->DefaultHealth = 80.0f;
+	HealthComp->DefaultHealth = 50.0f;
 	HealthComp->ServerOnHealthChanged.AddDynamic(this, &ASTrackerBot::OnHealthChanged);
 
 	bUseVelocityChange = true;
 	MovementForce = 1000.0f;
 	RequiredDistanceToTarget = 100.0f;
+
+	RadialDamage = 100.0f;
+	DamageRadius = 200.0f;
 }
 
 void ASTrackerBot::BeginPlay()
@@ -66,6 +70,37 @@ void ASTrackerBot::OnHealthChanged(
 	{
 		MatInst->SetScalarParameterValue("LastTimeDamageTaken", GetWorld()->TimeSeconds);
 	}
+
+	if (Health <= 0.0f)
+	{
+		SelfDestruct();
+	}
+}
+
+void ASTrackerBot::SelfDestruct()
+{
+	if (bExploded)
+	{
+		return;
+	}
+
+	if (ExplosionFX)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionFX, GetActorLocation());
+	}
+	
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(this);
+
+	UGameplayStatics::ApplyRadialDamageWithFalloff(
+		GetWorld(), RadialDamage, RadialDamage * 0.2f, GetActorLocation(),
+		DamageRadius * 0.2f, DamageRadius, 1.0f, nullptr,
+		IgnoredActors, this, GetInstigatorController(), COLLISION_WEAPON);
+
+	DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 12, FColor::Red, false, 4.0f, 0, 1.0f);
+
+	bExploded = true;
+	Destroy();
 }
 
 void ASTrackerBot::Tick(float DeltaTime)
