@@ -22,6 +22,9 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	FVector GetNextPathPoint();
+
 public:	
 
 	virtual void Tick(float DeltaTime) override;
