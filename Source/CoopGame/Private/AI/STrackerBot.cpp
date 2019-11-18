@@ -9,6 +9,7 @@
 #include "Components/SHealthComponent.h"
 #include "CoopGame.h"
 #include "SCharacter.h"
+#include "Sound/SoundCue.h"
 
 
 ASTrackerBot::ASTrackerBot()
@@ -39,6 +40,9 @@ ASTrackerBot::ASTrackerBot()
 
 	RadialDamage = 100.0f;
 	DamageRadius = 300.0f;
+
+	SelfDestructTickDamage = 10.0f;
+	SelfDamageInterval = 0.25f;
 }
 
 void ASTrackerBot::BeginPlay()
@@ -109,6 +113,8 @@ void ASTrackerBot::SelfDestruct()
 		DamageRadius * 0.2f, DamageRadius, 1.0f, nullptr,
 		IgnoredActors, this, GetInstigatorController(), COLLISION_WEAPON);
 
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
+
 	DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 12, FColor::Red, false, 4.0f, 0, 1.0f);
 
 	bExploded = true;
@@ -150,9 +156,12 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 	{
 		GetWorldTimerManager().SetTimer(
 			TimerHandle_SelfDamage,
-			[this]() { UGameplayStatics::ApplyDamage(this, 20.0f, this->GetInstigatorController(), this, nullptr); },
-			0.5f, true, 0.0f);
+			[this]() { UGameplayStatics::ApplyDamage(this, SelfDestructTickDamage, this->GetInstigatorController(), this, nullptr); },
+			SelfDamageInterval, true, 0.0f);
 
 		bStartedSelfDestruction = true;
+		
+		// sound will play several seconds, so make sure the sound follows the actor
+		UGameplayStatics::SpawnSoundAttached(BeginSelfDestructSound, RootComponent);
 	}
 }
