@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,6 +6,7 @@
 
 
 class USHealthComponent;
+class UMaterialInstanceDynamic;
 
 UCLASS()
 class COOPGAME_API ASTrackerBot : public APawn
@@ -36,6 +35,9 @@ protected:
 	USHealthComponent* HealthComp;
 
 	FVector NextPathPoint;
+
+	// dynamic material to pulse on damage
+	UMaterialInstanceDynamic* MatInst;
 
 	virtual void BeginPlay() override;
 
