@@ -29,7 +29,7 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "PickupActor")
 	TSubclassOf<ASPowerupActor> PowerupClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "PickupActor")
+	UPROPERTY(EditInstanceOnly, Category = "PickupActor")
 	float CooldownDuration;
 
 	ASPowerupActor* PowerupInstance;
