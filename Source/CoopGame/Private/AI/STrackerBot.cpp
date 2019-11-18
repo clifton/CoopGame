@@ -117,6 +117,8 @@ void ASTrackerBot::SelfDestruct()
 
 	DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 12, FColor::Red, false, 4.0f, 0, 1.0f);
 
+	GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
+
 	bExploded = true;
 	Destroy();
 }
