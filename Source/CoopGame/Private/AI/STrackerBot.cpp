@@ -38,7 +38,7 @@ ASTrackerBot::ASTrackerBot()
 	RequiredDistanceToTarget = 100.0f;
 
 	RadialDamage = 100.0f;
-	DamageRadius = 200.0f;
+	DamageRadius = 300.0f;
 }
 
 void ASTrackerBot::BeginPlay()
@@ -141,15 +141,18 @@ void ASTrackerBot::Tick(float DeltaTime)
 
 void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Overlapped with %s"), *OtherActor->GetName());
+
 	if (bStartedSelfDestruction) return;
-	bStartedSelfDestruction = true;
 
 	ASCharacter* PlayerPawn = Cast<ASCharacter>(OtherActor);
 	if (PlayerPawn)
 	{
 		GetWorldTimerManager().SetTimer(
 			TimerHandle_SelfDamage,
-			[this]() { UGameplayStatics::ApplyDamage(this, 20.0f, GetInstigatorController(), this, nullptr); },
+			[this]() { UGameplayStatics::ApplyDamage(this, 20.0f, this->GetInstigatorController(), this, nullptr); },
 			0.5f, true, 0.0f);
+
+		bStartedSelfDestruction = true;
 	}
 }
