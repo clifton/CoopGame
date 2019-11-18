@@ -29,9 +29,6 @@ void ASProjectileWeapon::Fire()
 	ProjectileSpawnParams.Instigator = MyCharacter;
 	ProjectileSpawnParams.Owner = this;
 
-	// spawn the projectile at the muzzle
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, EyeRotation, ProjectileSpawnParams);
-
 	PlayFireEffects();
 	
 	LastFiredTime = GetWorld()->TimeSeconds;
@@ -39,5 +36,8 @@ void ASProjectileWeapon::Fire()
 	if (Role == ROLE_Authority)
 	{
 		HitScanTrace.LastFiredTime = LastFiredTime;
+
+		// spawn the projectile at the muzzle
+		GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, EyeRotation, ProjectileSpawnParams);
 	}
 }

@@ -81,6 +81,10 @@ void ASProjectile::OnExplode()
 		DrawDebugSphere(GetWorld(), BlastLocation, BlastInnerRadius, 12, FColor::Red, false, 10.0f);
 	}
 
+	MeshComp->SetVisibility(false, true);
+	MeshComp->SetSimulatePhysics(false);
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	if (Role < ROLE_Authority)
 	{
 		ServerExplode();
@@ -125,7 +129,7 @@ void ASProjectile::OnExplode()
 		RadialForceComp->FireImpulse();
 	}
 
-	this->Destroy();
+	SetLifeSpan(2.0f);
 }
 
 bool ASProjectile::ServerExplode_Validate()
