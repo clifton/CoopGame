@@ -59,12 +59,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	float DamageRadius;
 
+	UPROPERTY(ReplicatedUsing = OnRep_PowerLevel)
+	uint8 PowerLevel;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	uint8 MaxPowerLevel;
+
 	FVector NextPathPoint;
 
 	bool bExploded;
 	bool bStartedSelfDestruction;
 
 	FTimerHandle TimerHandle_SelfDamage;
+	FTimerHandle TimerHandle_UpdatePowerLevel;
 
 	// dynamic material to pulse on damage
 	UMaterialInstanceDynamic* MatInst;
@@ -80,6 +87,11 @@ protected:
 		class AController* InstigatedBy, AActor* DamageCauser);
 
 	void SelfDestruct();
+
+	void SetPowerLevel();
+
+	UFUNCTION()
+	void OnRep_PowerLevel();
 
 public:	
 

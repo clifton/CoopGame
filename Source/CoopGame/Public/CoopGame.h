@@ -11,3 +11,4 @@
 
 // Collision Trace Channels
 #define COLLISION_WEAPON				ECC_GameTraceChannel1
+#define COLLISION_TRACKERBOT			ECC_GameTraceChannel2

@@ -10,6 +10,7 @@
 #include "CoopGame.h"
 #include "SCharacter.h"
 #include "Sound/SoundCue.h"
+#include "Net/UnrealNetwork.h"
 
 
 ASTrackerBot::ASTrackerBot()
@@ -26,6 +27,7 @@ ASTrackerBot::ASTrackerBot()
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASTrackerBot::OnHealthChanged);
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	SphereComp->SetCollisionObjectType(COLLISION_TRACKERBOT);
 	SphereComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
@@ -35,14 +37,19 @@ ASTrackerBot::ASTrackerBot()
 	bExploded = false;
 
 	bUseVelocityChange = true;
-	MovementForce = 1000.0f;
+	MovementForce = 600.0f;
 	RequiredDistanceToTarget = 100.0f;
 
+	PowerLevel = 0;
+	MaxPowerLevel = 4;
+
 	RadialDamage = 100.0f;
-	DamageRadius = 300.0f;
+	DamageRadius = 400.0f;
 
 	SelfDestructTickDamage = 10.0f;
 	SelfDamageInterval = 0.25f;
+
+	SetReplicates(true);
 }
 
 void ASTrackerBot::BeginPlay()
@@ -54,6 +61,13 @@ void ASTrackerBot::BeginPlay()
 	if (Role == ROLE_Authority)
 	{
 		NextPathPoint = GetNextPathPoint();
+
+		GetWorldTimerManager().SetTimer(TimerHandle_UpdatePowerLevel, this, &ASTrackerBot::SetPowerLevel, 0.25f, true, 0.0f);
+	}
+
+	if (MatInst == nullptr)
+	{
+		MatInst = MeshComp->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MeshComp->GetMaterial(0));
 	}
 }
 
@@ -66,7 +80,7 @@ FVector ASTrackerBot::GetNextPathPoint()
 	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
 
 	// return next path point
-	if (NavPath->PathPoints.Num() > 1)
+	if (NavPath && NavPath->PathPoints.Num() > 1)
 	{
 		return NavPath->PathPoints[1];
 	}
@@ -80,11 +94,6 @@ void ASTrackerBot::OnHealthChanged(
 	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Health %s of %s"), *FString::SanitizeFloat(Health), *GetName());
-
-	if (MatInst == nullptr)
-	{
-		MatInst = MeshComp->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MeshComp->GetMaterial(0));
-	}
 
 	if (MatInst)
 	{
@@ -125,9 +134,48 @@ void ASTrackerBot::SelfDestruct()
 		DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 12, FColor::Red, false, 4.0f, 0, 1.0f);
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
+		GetWorldTimerManager().ClearTimer(TimerHandle_UpdatePowerLevel);
 		
 		// immediate destroy doesnt let animation play on clients
 		SetLifeSpan(2.0f);
+	}
+}
+
+void ASTrackerBot::SetPowerLevel()
+{
+	TArray<struct FOverlapResult> OverlapResult;
+	
+	FCollisionObjectQueryParams CollisionObjectQueryParams;
+	CollisionObjectQueryParams.AddObjectTypesToQuery(COLLISION_TRACKERBOT);
+	
+	FCollisionShape CollisionShape;
+	CollisionShape.SetSphere(DamageRadius);
+
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(this);
+
+	GetWorld()->OverlapMultiByObjectType(
+		OverlapResult, GetActorLocation(), FQuat::FQuat(), CollisionObjectQueryParams,
+		CollisionShape, CollisionQueryParams);
+
+	if (PowerLevel != OverlapResult.Num())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s PowerLevel set to %s"), *GetName(), *FString::FromInt(PowerLevel));
+		PowerLevel = OverlapResult.Num();
+
+		if (MatInst)
+		{
+			MatInst->SetScalarParameterValue("PowerLevelAlpha", FMath::Clamp((float)PowerLevel / (float)MaxPowerLevel, 0.0f, 1.0f));
+		}
+	}
+}
+
+// only runs on clients
+void ASTrackerBot::OnRep_PowerLevel()
+{
+	if (MatInst)
+	{
+		MatInst->SetScalarParameterValue("PowerLevelAlpha", FMath::Clamp((float)PowerLevel / (float)MaxPowerLevel, 0.0f, 1.0f));
 	}
 }
 
@@ -177,4 +225,11 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 		UGameplayStatics::SpawnSoundAttached(BeginSelfDestructSound, RootComponent);
 		bStartedSelfDestruction = true;
 	}
+}
+
+void ASTrackerBot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASTrackerBot, PowerLevel);
 }
