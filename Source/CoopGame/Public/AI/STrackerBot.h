@@ -7,6 +7,7 @@
 
 class USHealthComponent;
 class UMaterialInstanceDynamic;
+class USphereComponent;
 
 UCLASS()
 class COOPGAME_API ASTrackerBot : public APawn
@@ -18,6 +19,8 @@ public:
 	ASTrackerBot();
 
 protected:
+
+	USphereComponent* SphereComp;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UStaticMeshComponent* MeshComp;
@@ -46,6 +49,9 @@ protected:
 	FVector NextPathPoint;
 
 	bool bExploded;
+	bool bStartedSelfDestruction;
+
+	FTimerHandle TimerHandle_SelfDamage;
 
 	// dynamic material to pulse on damage
 	UMaterialInstanceDynamic* MatInst;
@@ -66,4 +72,5 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };
