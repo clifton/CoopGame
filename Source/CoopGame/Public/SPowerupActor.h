@@ -22,13 +22,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
 	int32 TotalNumberOfTicks;
 
+	UPROPERTY(ReplicatedUsing=OnRep_PowerupActivated)
+	bool bIsActivated;
+
 	int32 TicksApplied;
 
 	FTimerHandle TimerHandle_PowerupTick;
 
-	virtual void BeginPlay() override;
-
 	void InternalOnPowerupTick();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnPowerupStateChange(bool bIsActive);
 
 public:
 
@@ -42,4 +46,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Powerups")
 	void OnPowerupTick();
+
+	UFUNCTION()
+	void OnRep_PowerupActivated();
 };

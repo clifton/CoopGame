@@ -16,13 +16,18 @@ ASPickupActor::ASPickupActor()
 	DecalComp->DecalSize = FVector(64.0f, 75.0f, 75.0f);
 
 	CooldownDuration = 10.0f;
+
+	SetReplicates(true);
 }
 
 void ASPickupActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Respawn();
+	if (Role == ROLE_Authority)
+	{
+		Respawn();
+	}
 }
 
 void ASPickupActor::Respawn()
@@ -45,7 +50,7 @@ void ASPickupActor::NotifyActorBeginOverlap(AActor* OtherActor)
 
 	UE_LOG(LogTemp, Warning, TEXT("Player picks up powerup!"));
 
-	if (PowerupInstance)
+	if (Role == ROLE_Authority && PowerupInstance)
 	{
 		PowerupInstance->ActivatePowerup();
 		PowerupInstance = nullptr;
