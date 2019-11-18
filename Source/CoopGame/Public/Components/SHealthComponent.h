@@ -46,4 +46,9 @@ protected:
 	// only called on clients
 	UFUNCTION()
 	void OnRep_Health(float OldHealth);
+
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "HealthComponent")
+	void Heal(float HealAmount);
 };
