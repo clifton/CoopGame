@@ -126,8 +126,10 @@ void ASTrackerBot::SelfDestruct()
 		TArray<AActor*> IgnoredActors;
 		IgnoredActors.Add(this);
 
+		float DamageWithPowerLevel = RadialDamage + RadialDamage * (float)PowerLevel;
+
 		UGameplayStatics::ApplyRadialDamageWithFalloff(
-			GetWorld(), RadialDamage, RadialDamage * 0.2f, GetActorLocation(),
+			GetWorld(), DamageWithPowerLevel, DamageWithPowerLevel * 0.2f, GetActorLocation(),
 			DamageRadius * 0.2f, DamageRadius, 1.0f, nullptr,
 			IgnoredActors, this, GetInstigatorController(), COLLISION_WEAPON);
 
