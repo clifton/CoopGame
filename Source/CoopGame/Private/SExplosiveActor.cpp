@@ -41,7 +41,7 @@ void ASExplosiveActor::BeginPlay()
 
 	if (Role == ROLE_Authority)
 	{
-		HealthComp->ServerOnDeath.AddDynamic(this, &ASExplosiveActor::ServerOnDeath);
+		HealthComp->OnDeath.AddDynamic(this, &ASExplosiveActor::ServerOnDeath);
 	}
 }
 

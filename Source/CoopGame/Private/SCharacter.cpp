@@ -45,7 +45,7 @@ void ASCharacter::BeginPlay()
 	// redundant but helpful to document behavior
 	if (Role == ROLE_Authority)
 	{
-		HealthComp->ServerOnDeath.AddDynamic(this, &ASCharacter::ServerOnDeath);
+		HealthComp->OnDeath.AddDynamic(this, &ASCharacter::ServerOnDeath);
 	}
 
 	DefaultFOV = CameraComp->FieldOfView;

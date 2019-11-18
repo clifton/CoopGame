@@ -19,14 +19,14 @@ void USHealthComponent::BeginPlay()
 		AActor* MyOwner = GetOwner();
 		if (!MyOwner) return;
 
-		MyOwner->OnTakeAnyDamage.AddDynamic(this, &USHealthComponent::ServerHandleTakeAnyDamage);
+		MyOwner->OnTakeAnyDamage.AddDynamic(this, &USHealthComponent::HandleTakeAnyDamage);
 
 		Health = DefaultHealth;
 		bIsDead = false;
 	}
 }
 
-void USHealthComponent::ServerHandleTakeAnyDamage(
+void USHealthComponent::HandleTakeAnyDamage(
 	AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
@@ -35,20 +35,26 @@ void USHealthComponent::ServerHandleTakeAnyDamage(
 	Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
 	UE_LOG(LogTemp, Log, TEXT("Health changed: %s"), *FString::SanitizeFloat(Health));
 
-	ClientOnHealthChanged.Broadcast(this, Health);
-	ServerOnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
+	OnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 
 	if (Health <= 0.0f && !bIsDead)
 	{
 		bIsDead = true;
-		ServerOnDeath.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
+		OnDeath.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 	}
 }
 
 // fired only on clients
-void USHealthComponent::OnRep_Health()
+void USHealthComponent::OnRep_Health(float OldHealth)
 {
-	ClientOnHealthChanged.Broadcast(this, Health);
+	float Damage = OldHealth - Health;
+	OnHealthChanged.Broadcast(this, Health, Damage, nullptr, nullptr, nullptr);
+
+	if (Health <= 0.0f && !bIsDead)
+	{
+		bIsDead = true;
+		OnDeath.Broadcast(this, Health, Damage, nullptr, nullptr, nullptr);
+	}
 }
 
 void USHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
