@@ -33,7 +33,7 @@ void USHealthComponent::HandleTakeAnyDamage(
 	if (Damage <= 0.0f) return;
 
 	Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
-	UE_LOG(LogTemp, Log, TEXT("Health changed: %s"), *FString::SanitizeFloat(Health));
+	// UE_LOG(LogTemp, Log, TEXT("Health changed: %s"), *FString::SanitizeFloat(Health));
 
 	OnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 
@@ -62,7 +62,8 @@ void USHealthComponent::Heal(float HealAmount)
 	if (HealAmount <= 0.0f  || Health <= 0.0) return;
 
 	Health = FMath::Clamp(Health + HealAmount, 0.0f, DefaultHealth);
-	UE_LOG(LogTemp, Log, TEXT("Health changed to %s - +%s"), *FString::SanitizeFloat(Health), *FString::SanitizeFloat(HealAmount));
+	// put behind cvar
+	// UE_LOG(LogTemp, Log, TEXT("Health changed to %s - +%s"), *FString::SanitizeFloat(Health), *FString::SanitizeFloat(HealAmount));
 
 	OnHealthChanged.Broadcast(this, Health, -HealAmount, nullptr, nullptr, nullptr);
 }
