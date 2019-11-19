@@ -45,9 +45,6 @@ protected:
 	UFUNCTION()
 	void OnExplode();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerExplode();
-
 public:	
 	ASProjectile();
 

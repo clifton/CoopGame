@@ -87,7 +87,6 @@ void ASProjectile::OnExplode()
 
 	if (Role < ROLE_Authority)
 	{
-		ServerExplode();
 		return;
 	}
 
@@ -130,14 +129,4 @@ void ASProjectile::OnExplode()
 	}
 
 	SetLifeSpan(2.0f);
-}
-
-bool ASProjectile::ServerExplode_Validate()
-{
-	return true;
-}
-
-void ASProjectile::ServerExplode_Implementation()
-{
-	OnExplode();
 }
