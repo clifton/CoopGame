@@ -7,6 +7,7 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "CoopGame.h"
 #include "TimerManager.h"
+#include "SCharacter.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -104,8 +105,11 @@ void ASWeapon::Fire()
 		SurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
 
 		if (Role == ROLE_Authority)
-		{
-			float ActualDamage = BaseDamage;
+		{	
+			ASCharacter* MyCharacter = Cast<ASCharacter>(MyOwner);
+			float DamageMultiplier = MyCharacter ? MyCharacter->GetDamageMultiplier() : 1.0f;
+
+			float ActualDamage = BaseDamage * DamageMultiplier;
 
 			if (SurfaceType == SURFACE_FLESHVULERNABLE)
 			{

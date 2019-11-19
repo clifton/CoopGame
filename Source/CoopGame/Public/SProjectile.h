@@ -31,6 +31,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
 	float BlastRadius;
 
+	float DamageMultiplier;
+
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	UProjectileMovementComponent* ProjectileMovement;
@@ -44,9 +46,6 @@ protected:
 
 	UFUNCTION()
 	void OnExplode();
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerExplode();
 
 public:	
 	ASProjectile();
