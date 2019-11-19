@@ -174,7 +174,6 @@ void ASTrackerBot::SetPowerLevel()
 
 	if (PowerLevel != OverlapResult.Num())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s PowerLevel set to %s"), *GetName(), *FString::FromInt(PowerLevel));
 		PowerLevel = OverlapResult.Num();
 
 		if (MatInst)
