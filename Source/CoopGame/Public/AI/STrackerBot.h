@@ -19,6 +19,8 @@ public:
 
 	ASTrackerBot();
 
+	static int32 DebugTrackerBot;
+
 protected:
 
 	USphereComponent* SphereComp;

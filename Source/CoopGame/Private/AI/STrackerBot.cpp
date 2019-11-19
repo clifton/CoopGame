@@ -13,6 +13,13 @@
 #include "Net/UnrealNetwork.h"
 
 
+// console variables
+int32 ASTrackerBot::DebugTrackerBot = 0;
+FAutoConsoleVariableRef CVar_DebugTrackerBot(
+	TEXT("COOP.DebugTrackerBot"), ASTrackerBot::DebugTrackerBot,
+	TEXT("Draw debug geometry for TrackerBot movement and blast radius"),
+	ECVF_Cheat);
+
 ASTrackerBot::ASTrackerBot()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -143,7 +150,10 @@ void ASTrackerBot::SelfDestruct()
 			DamageRadius * 0.2f, DamageRadius, 1.0f, nullptr,
 			IgnoredActors, this, GetInstigatorController(), COLLISION_WEAPON);
 
-		DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 12, FColor::Red, false, 4.0f, 0, 1.0f);
+		if (DebugTrackerBot > 0)
+		{
+			DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 12, FColor::Red, false, 4.0f, 0, 1.0f);
+		}
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
 		GetWorldTimerManager().ClearTimer(TimerHandle_UpdatePowerLevel);
@@ -204,14 +214,20 @@ void ASTrackerBot::Tick(float DeltaTime)
 			ForceDirection.Normalize();
 			MeshComp->AddForce(ForceDirection * MovementForce, NAME_None, bUseVelocityChange);
 
-			DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + ForceDirection * 200.0f, 32, FColor::Yellow, false, 0.0f, 0, 1.0f);
+			if (DebugTrackerBot > 0)
+			{
+				DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + ForceDirection * 200.0f, 32, FColor::Yellow, false, 0.0f, 0, 1.0f);
+			}
 		}
 		else
 		{
 			NextPathPoint = GetNextPathPoint();
 		}
 
-		DrawDebugSphere(GetWorld(), NextPathPoint, 20.0f, 12, FColor::Yellow, false, 0.0f, 2.0f);
+		if (DebugTrackerBot > 0)
+		{
+			DrawDebugSphere(GetWorld(), NextPathPoint, 20.0f, 12, FColor::Yellow, false, 0.0f, 2.0f);
+		}
 	}
 }
 
