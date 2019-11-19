@@ -73,11 +73,23 @@ void ASTrackerBot::BeginPlay()
 
 FVector ASTrackerBot::GetNextPathPoint()
 {
-	// HACK
-	ACharacter* PlayerPawn = UGameplayStatics::GetPlayerCharacter(this, 0);
+	AActor* ClosestActor = nullptr;
+
+	TArray<AActor*> Characters;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASCharacter::StaticClass(), Characters);
+	for (auto* CharPawn : Characters)
+	{
+		USHealthComponent* CharHealthComp = Cast<USHealthComponent>(CharPawn->GetComponentByClass(USHealthComponent::StaticClass()));
+		if (HealthComp == nullptr || CharHealthComp->GetHealth() <= 0.0f) continue;
+
+		if (ClosestActor == nullptr || GetDistanceTo(CharPawn) < GetDistanceTo(ClosestActor))
+		{
+			ClosestActor = CharPawn;
+		}
+	}
 
 	// use deprecated navigation system
-	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
+	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), ClosestActor);
 
 	// return next path point
 	if (NavPath && NavPath->PathPoints.Num() > 1)
