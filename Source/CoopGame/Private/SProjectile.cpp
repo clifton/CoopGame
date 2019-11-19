@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "SProjectile.h"
 #include "SWeapon.h"
+#include "SCharacter.h"
 #include "CoopGame.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -15,6 +16,8 @@ ASProjectile::ASProjectile()
 {
 	ProjectileLifespan = 1.0f;
 	BlastRadius = 300.0f;
+
+	DamageMultiplier = 1.0f;
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -63,6 +66,12 @@ void ASProjectile::BeginPlay()
 	Super::BeginPlay();
 	
 	GetWorldTimerManager().SetTimer(TimerHandle_ProjectileLifespan, this, &ASProjectile::OnExplode, ProjectileLifespan);
+
+	ASCharacter* InstigatorChar = Cast<ASCharacter>(GetInstigator());
+	if (InstigatorChar)
+	{
+		DamageMultiplier = InstigatorChar->GetDamageMultiplier();
+	}
 }
 
 void ASProjectile::OnExplode()
@@ -94,7 +103,7 @@ void ASProjectile::OnExplode()
 	if (Weapon)
 	{
 		// do damage
-		float BlastDamage = Weapon->BaseDamage;
+		float BlastDamage = Weapon->BaseDamage * DamageMultiplier;
 		float MinimumDamage = BlastDamage * 0.1f;
 		float DamageFalloff = 1.0f; // linear
 

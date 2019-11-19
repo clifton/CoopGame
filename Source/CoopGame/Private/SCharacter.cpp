@@ -17,6 +17,9 @@ ASCharacter::ASCharacter()
 	ZoomFOV = 45.0f;
 	ZoomInterpSpeed = 15.0f;
 
+	// for quad damage etc
+	DamageMultiplier = 1.0f;
+
 	WeaponAttachSocketName = "WeaponSocket";
 
 	// capsule component should ignore weapon collision channel, pass through to skeletal mesh
@@ -84,6 +87,17 @@ void ASCharacter::EquipWeapon(TSubclassOf<ASWeapon> WeaponClass)
 		CurrentWeapon->SetOwner(this);
 		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
 	}
+}
+
+void ASCharacter::SetDamageMultiplier(float NewMultiplier)
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s damage multiplier set to %s"), *GetName(), *FString::SanitizeFloat(NewMultiplier));
+	DamageMultiplier = NewMultiplier;
+}
+
+float ASCharacter::GetDamageMultiplier()
+{
+	return DamageMultiplier;
 }
 
 void ASCharacter::ServerEquipWeapon_Implementation(TSubclassOf<ASWeapon> WeaponClass)
