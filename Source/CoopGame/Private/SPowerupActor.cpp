@@ -28,7 +28,7 @@ void ASPowerupActor::InternalOnPowerupTick()
 	}
 }
 
-void ASPowerupActor::ActivatePowerup()
+void ASPowerupActor::ActivatePowerup(AActor* OtherActor)
 {
 	if (PowerupInterval > 0.0f)
 	{
@@ -41,7 +41,7 @@ void ASPowerupActor::ActivatePowerup()
 	{
 		InternalOnPowerupTick();
 	}
-	OnActivated();
+	OnActivated(OtherActor);
 	bIsActivated = true;
 	// ActivatePowerup() only runs on server, so manually call on server
 	OnRep_PowerupActivated();
