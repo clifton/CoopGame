@@ -3,11 +3,13 @@
 #include "TimerManager.h"
 #include "STrackerBot.h"
 #include "SGameState.h"
+#include "SPlayerState.h"
 
 
 ASGameMode::ASGameMode()
 {
 	GameStateClass = ASGameState::StaticClass();
+	PlayerStateClass = ASPlayerState::StaticClass();
 
 	TimeBetweenWaves = 2.0f;
 	WaveCount = 1;
