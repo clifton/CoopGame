@@ -2,16 +2,38 @@
 #include "Components/SHealthComponent.h"
 #include "TimerManager.h"
 #include "STrackerBot.h"
+#include "SGameState.h"
 
 
 ASGameMode::ASGameMode()
 {
+	GameStateClass = ASGameState::StaticClass();
+
 	TimeBetweenWaves = 2.0f;
 	WaveCount = 1;
 
 	PrimaryActorTick.bCanEverTick = true;
 	// in seconds, 0 will tick every frame
 	PrimaryActorTick.TickInterval = 1.0f;
+}
+
+void ASGameMode::CheckAnyPlayerAlive()
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+		if (PC && PC->GetPawn())
+		{
+			APawn* MyPawn = PC->GetPawn();
+			USHealthComponent* HealthComp = Cast<USHealthComponent>(MyPawn->GetComponentByClass(USHealthComponent::StaticClass()));
+			// assert that a health comp exists
+			if (ensure(HealthComp) && HealthComp->GetHealth() > 0.0f)
+			{
+				return;
+			}
+		}
+	}
+	GameOver();
 }
 
 void ASGameMode::SpawnBotTimerElapsed()
@@ -68,6 +90,22 @@ void ASGameMode::CheckWaveState()
 	}
 }
 
+void ASGameMode::GameOver()
+{
+	EndWave();
+
+	UE_LOG(LogTemp, Log, TEXT("Game over, players died"));
+}
+
+void ASGameMode::SetWaveState(EWaveState NewState)
+{
+	ASGameState* GS = GetGameState<ASGameState>();
+	if (ensureAlways(GS))
+	{
+		GS->WaveState = NewState;
+	}
+}
+
 void ASGameMode::StartPlay()
 {
 	Super::StartPlay();
@@ -80,4 +118,5 @@ void ASGameMode::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	CheckWaveState();
+	CheckAnyPlayerAlive();
 }

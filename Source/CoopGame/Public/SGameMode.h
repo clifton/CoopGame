@@ -5,6 +5,8 @@
 #include "SGameMode.generated.h"
 
 
+enum class EWaveState : uint8;
+
 UCLASS()
 class COOPGAME_API ASGameMode : public AGameModeBase
 {
@@ -26,6 +28,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode")
 	void SpawnNewBot();
 
+	void CheckAnyPlayerAlive();
+
 	void SpawnBotTimerElapsed();
 
 	void StartWave();
@@ -36,6 +40,10 @@ protected:
 	void PrepareForNextWave();
 
 	void CheckWaveState();
+
+	void GameOver();
+
+	void SetWaveState(EWaveState NewState);
 
 public:
 
