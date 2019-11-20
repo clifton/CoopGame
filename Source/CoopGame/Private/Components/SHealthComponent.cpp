@@ -1,11 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Components/SHealthComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "SGameMode.h"
 
 
 USHealthComponent::USHealthComponent()
 {
 	DefaultHealth = 100.0f;
+	bIsDead = false;
 
 	SetIsReplicated(true);
 }
@@ -22,7 +24,6 @@ void USHealthComponent::BeginPlay()
 		MyOwner->OnTakeAnyDamage.AddDynamic(this, &USHealthComponent::HandleTakeAnyDamage);
 
 		Health = DefaultHealth;
-		bIsDead = false;
 	}
 }
 
@@ -30,17 +31,27 @@ void USHealthComponent::HandleTakeAnyDamage(
 	AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
-	if (Damage <= 0.0f) return;
+	if (Damage <= 0.0f || bIsDead) return;
 
 	Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
 	// UE_LOG(LogTemp, Log, TEXT("Health changed: %s"), *FString::SanitizeFloat(Health));
 
 	OnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 
-	if (Health <= 0.0f && !bIsDead)
+	if (InstigatedBy) UE_LOG(LogTemp, Warning, TEXT("Killer Controller: %s"), *InstigatedBy->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("Victim Actor: %s"), *DamagedActor->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("Weapon Actor: %s"), *DamageCauser->GetName());
+
+	bIsDead = Health <= 0.0f;
+	if (bIsDead)
 	{
-		bIsDead = true;
 		OnDeath.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
+
+		ASGameMode* GM = GetWorld()->GetAuthGameMode<ASGameMode>();
+		if (GM)
+		{
+			GM->OnActorKilled.Broadcast(InstigatedBy, DamagedActor, DamageCauser);
+		}
 	}
 }
 

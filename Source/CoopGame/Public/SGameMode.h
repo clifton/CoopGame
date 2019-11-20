@@ -7,6 +7,10 @@
 
 enum class EWaveState : uint8;
 
+// killer controller, victim actor, weapon actor
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
+	FOnActorKilled, AController*, KillerController, AActor*, VictimActor, AActor*, WeaponActor);
+
 UCLASS()
 class COOPGAME_API ASGameMode : public AGameModeBase
 {
@@ -46,6 +50,9 @@ protected:
 	void SetWaveState(EWaveState NewState);
 
 public:
+
+	UPROPERTY(BlueprintAssignable, Category = "GameMode")
+	FOnActorKilled OnActorKilled;
 
 	ASGameMode();
 
