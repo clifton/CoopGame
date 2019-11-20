@@ -13,6 +13,13 @@
 #include "Net/UnrealNetwork.h"
 
 
+// console variables
+int32 ASTrackerBot::DebugTrackerBot = 0;
+FAutoConsoleVariableRef CVar_DebugTrackerBot(
+	TEXT("COOP.DebugTrackerBot"), ASTrackerBot::DebugTrackerBot,
+	TEXT("Draw debug geometry for TrackerBot movement and blast radius"),
+	ECVF_Cheat);
+
 ASTrackerBot::ASTrackerBot()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -73,11 +80,23 @@ void ASTrackerBot::BeginPlay()
 
 FVector ASTrackerBot::GetNextPathPoint()
 {
-	// HACK
-	ACharacter* PlayerPawn = UGameplayStatics::GetPlayerCharacter(this, 0);
+	AActor* ClosestActor = nullptr;
+
+	TArray<AActor*> Characters;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASCharacter::StaticClass(), Characters);
+	for (auto* CharPawn : Characters)
+	{
+		USHealthComponent* CharHealthComp = Cast<USHealthComponent>(CharPawn->GetComponentByClass(USHealthComponent::StaticClass()));
+		if (HealthComp == nullptr || CharHealthComp->GetHealth() <= 0.0f) continue;
+
+		if (ClosestActor == nullptr || GetDistanceTo(CharPawn) < GetDistanceTo(ClosestActor))
+		{
+			ClosestActor = CharPawn;
+		}
+	}
 
 	// use deprecated navigation system
-	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
+	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), ClosestActor);
 
 	// return next path point
 	if (NavPath && NavPath->PathPoints.Num() > 1)
@@ -93,8 +112,6 @@ void ASTrackerBot::OnHealthChanged(
 	USHealthComponent* ChangedHealthComp, float Health, float HealthDelta,
 	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Health %s of %s"), *FString::SanitizeFloat(Health), *GetName());
-
 	if (MatInst)
 	{
 		MatInst->SetScalarParameterValue("LastTimeDamageTaken", GetWorld()->TimeSeconds);
@@ -133,13 +150,17 @@ void ASTrackerBot::SelfDestruct()
 			DamageRadius * 0.2f, DamageRadius, 1.0f, nullptr,
 			IgnoredActors, this, GetInstigatorController(), COLLISION_WEAPON);
 
-		DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 12, FColor::Red, false, 4.0f, 0, 1.0f);
+		if (DebugTrackerBot > 0)
+		{
+			DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 12, FColor::Red, false, 4.0f, 0, 1.0f);
+		}
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
 		GetWorldTimerManager().ClearTimer(TimerHandle_UpdatePowerLevel);
 		
 		// immediate destroy doesnt let animation play on clients
 		SetLifeSpan(2.0f);
+		GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
 	}
 }
 
@@ -162,7 +183,6 @@ void ASTrackerBot::SetPowerLevel()
 
 	if (PowerLevel != OverlapResult.Num())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s PowerLevel set to %s"), *GetName(), *FString::FromInt(PowerLevel));
 		PowerLevel = OverlapResult.Num();
 
 		if (MatInst)
@@ -195,14 +215,20 @@ void ASTrackerBot::Tick(float DeltaTime)
 			ForceDirection.Normalize();
 			MeshComp->AddForce(ForceDirection * MovementForce, NAME_None, bUseVelocityChange);
 
-			DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + ForceDirection * 200.0f, 32, FColor::Yellow, false, 0.0f, 0, 1.0f);
+			if (DebugTrackerBot > 0)
+			{
+				DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + ForceDirection * 200.0f, 32, FColor::Yellow, false, 0.0f, 0, 1.0f);
+			}
 		}
 		else
 		{
 			NextPathPoint = GetNextPathPoint();
 		}
 
-		DrawDebugSphere(GetWorld(), NextPathPoint, 20.0f, 12, FColor::Yellow, false, 0.0f, 2.0f);
+		if (DebugTrackerBot > 0)
+		{
+			DrawDebugSphere(GetWorld(), NextPathPoint, 20.0f, 12, FColor::Yellow, false, 0.0f, 2.0f);
+		}
 	}
 }
 
@@ -219,7 +245,7 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 		{
 			GetWorldTimerManager().SetTimer(
 				TimerHandle_SelfDamage,
-				[this]() { UGameplayStatics::ApplyDamage(this, SelfDestructTickDamage, this->GetInstigatorController(), this, nullptr); },
+				[this]() { UGameplayStatics::ApplyDamage(this, SelfDestructTickDamage, GetInstigatorController(), this, nullptr); },
 				SelfDamageInterval, true, 0.0f);
 		}
 

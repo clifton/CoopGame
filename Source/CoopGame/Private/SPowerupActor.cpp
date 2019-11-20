@@ -1,4 +1,5 @@
 #include "SPowerupActor.h"
+#include "SCharacter.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -30,6 +31,10 @@ void ASPowerupActor::InternalOnPowerupTick()
 
 void ASPowerupActor::ActivatePowerup(AActor* OtherActor)
 {
+	// non playable pawns should not be able to use powerups
+	ASCharacter* OtherChar = Cast<ASCharacter>(OtherActor);
+	if (OtherChar == nullptr) return;
+
 	if (PowerupInterval > 0.0f)
 	{
 		GetWorldTimerManager().SetTimer(

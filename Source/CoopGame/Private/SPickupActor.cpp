@@ -2,6 +2,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/DecalComponent.h"
 #include "SPowerupActor.h"
+#include "SCharacter.h"
 
 
 ASPickupActor::ASPickupActor()
@@ -48,9 +49,7 @@ void ASPickupActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	UE_LOG(LogTemp, Warning, TEXT("Player picks up powerup!"));
-
-	if (Role == ROLE_Authority && PowerupInstance)
+	if (Role == ROLE_Authority && PowerupInstance && Cast<ASCharacter>(OtherActor))
 	{
 		PowerupInstance->ActivatePowerup(OtherActor);
 		PowerupInstance = nullptr;
