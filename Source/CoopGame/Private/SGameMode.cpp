@@ -1,6 +1,7 @@
 #include "SGameMode.h"
 #include "Components/SHealthComponent.h"
 #include "TimerManager.h"
+#include "STrackerBot.h"
 
 
 ASGameMode::ASGameMode()
@@ -51,10 +52,10 @@ void ASGameMode::CheckWaveState()
 	for (FConstPawnIterator It = GetWorld()->GetPawnIterator(); It; ++It)
 	{
 		APawn* TestPawn = It->Get();
-		if (TestPawn == nullptr || TestPawn->IsPlayerControlled()) continue;
+		if (TestPawn == nullptr || !TestPawn->IsA(ASTrackerBot::StaticClass())) continue;
 
-		USHealthComponent* HealthComp = Cast<USHealthComponent>(TestPawn->GetComponentByClass(USHealthComponent::StaticClass()));
-		if (HealthComp && HealthComp->GetHealth() > 0.0f)
+		USHealthComponent* HealthComp = CastChecked<USHealthComponent>(TestPawn->GetComponentByClass(USHealthComponent::StaticClass()));
+		if (HealthComp->GetHealth() > 0.0f)
 		{
 			bIsAnyPawnAlive = true;
 			break;
