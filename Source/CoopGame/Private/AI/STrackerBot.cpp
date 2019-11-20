@@ -160,6 +160,7 @@ void ASTrackerBot::SelfDestruct()
 		
 		// immediate destroy doesnt let animation play on clients
 		SetLifeSpan(2.0f);
+		GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
 	}
 }
 
@@ -244,7 +245,7 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 		{
 			GetWorldTimerManager().SetTimer(
 				TimerHandle_SelfDamage,
-				[this]() { UGameplayStatics::ApplyDamage(this, SelfDestructTickDamage, this->GetInstigatorController(), this, nullptr); },
+				[this]() { UGameplayStatics::ApplyDamage(this, SelfDestructTickDamage, GetInstigatorController(), this, nullptr); },
 				SelfDamageInterval, true, 0.0f);
 		}
 
