@@ -32,7 +32,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode")
 	void SpawnNewBot();
 
-	void CheckAnyPlayerAlive();
+	bool IsAnyPlayerAlive();
 
 	void SpawnBotTimerElapsed();
 
@@ -48,6 +48,8 @@ protected:
 	void GameOver();
 
 	void SetWaveState(EWaveState NewState);
+
+	void RespawnDeadPlayers();
 
 public:
 

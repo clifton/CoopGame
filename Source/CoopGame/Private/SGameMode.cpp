@@ -19,7 +19,7 @@ ASGameMode::ASGameMode()
 	PrimaryActorTick.TickInterval = 1.0f;
 }
 
-void ASGameMode::CheckAnyPlayerAlive()
+bool ASGameMode::IsAnyPlayerAlive()
 {
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
@@ -31,11 +31,11 @@ void ASGameMode::CheckAnyPlayerAlive()
 			// assert that a health comp exists
 			if (ensure(HealthComp) && HealthComp->GetHealth() > 0.0f)
 			{
-				return;
+				return true;
 			}
 		}
 	}
-	GameOver();
+	return false;
 }
 
 void ASGameMode::SpawnBotTimerElapsed()
@@ -68,6 +68,8 @@ void ASGameMode::PrepareForNextWave()
 	GetWorldTimerManager().SetTimer(TimerHandle_NextWaveStart, this, &ASGameMode::StartWave, TimeBetweenWaves, false);
 
 	SetWaveState(EWaveState::WaitingToStart);
+
+	RespawnDeadPlayers();
 }
 
 void ASGameMode::CheckWaveState()
@@ -117,6 +119,18 @@ void ASGameMode::SetWaveState(EWaveState NewState)
 	}
 }
 
+void ASGameMode::RespawnDeadPlayers()
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+		if (PC && PC->GetPawn() == nullptr)
+		{
+			RestartPlayer(PC);
+		}
+	}
+}
+
 void ASGameMode::StartPlay()
 {
 	Super::StartPlay();
@@ -129,5 +143,5 @@ void ASGameMode::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	CheckWaveState();
-	CheckAnyPlayerAlive();
+	if (!IsAnyPlayerAlive()) GameOver();
 }
