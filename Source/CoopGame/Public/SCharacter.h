@@ -70,10 +70,6 @@ protected:
 
 	void EndZoom();
 
-	void StartFireWeapon();
-
-	void EndFireWeapon();
-
 	void EquipWeapon(TSubclassOf<ASWeapon> WeaponClass);
 
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -99,6 +95,12 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual FVector GetPawnViewLocation() const override;
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void StartFireWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void EndFireWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "CharacterAttributes")
 	void SetDamageMultiplier(float NewMultiplier);

@@ -25,6 +25,8 @@ ASWeapon::ASWeapon()
 
 	MuzzleSocketName = "MuzzleSocket";
 	TracerTargetName = "Target";
+	BulletSpread = 1.0f;
+	RateOfFire = 600.0;
 
 	SetReplicates(true);
 
@@ -78,6 +80,9 @@ void ASWeapon::Fire()
 	MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
 	FVector ShotDirection = EyeRotation.Vector();
+
+	float HalfRad = FMath::DegreesToRadians(BulletSpread);
+	ShotDirection = FMath::VRandCone(ShotDirection, HalfRad, HalfRad);
 
 	const float WeaponRange = 10000.0f;
 	FVector TraceEnd = EyeLocation + (ShotDirection * WeaponRange);
