@@ -43,8 +43,7 @@ void USHealthComponent::HandleTakeAnyDamage(
 	if (InstigatorActor == nullptr) InstigatorActor = DamageCauser;
 	if (InstigatorActor->GetOwner() != nullptr) InstigatorActor = InstigatorActor->GetOwner();
 
-	// disallow damage to self
-	if (InstigatorActor != DamagedActor && IsFriendly(InstigatorActor, DamagedActor)) return;
+	if (!ShouldApplyDamage(InstigatorActor, DamagedActor)) return;
 
 	Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
 
@@ -100,9 +99,23 @@ bool USHealthComponent::IsFriendly(AActor* ActorA, AActor* ActorB)
 	USHealthComponent* HealthCompA = Cast<USHealthComponent>(ActorA->GetComponentByClass(USHealthComponent::StaticClass()));
 	USHealthComponent* HealthCompB = Cast<USHealthComponent>(ActorB->GetComponentByClass(USHealthComponent::StaticClass()));
 	if (HealthCompA == nullptr || HealthCompB == nullptr) return true;
-	if (HealthCompA->FriendlyFireDisabled || HealthCompB->FriendlyFireDisabled) return false;
 
 	return HealthCompA->TeamNum == HealthCompB->TeamNum;
+}
+
+bool USHealthComponent::ShouldApplyDamage(AActor* ActorA, AActor* ActorB)
+{
+	// can damage self
+	if (ActorA == ActorB) return true;
+	// can damage unfriendly targets
+	if (!IsFriendly(ActorA, ActorB)) return true;
+
+	// can damage if either target has friendly fire disabled
+	if (ActorA == nullptr || ActorB == nullptr) return true;
+	USHealthComponent* HealthCompA = Cast<USHealthComponent>(ActorA->GetComponentByClass(USHealthComponent::StaticClass()));
+	USHealthComponent* HealthCompB = Cast<USHealthComponent>(ActorB->GetComponentByClass(USHealthComponent::StaticClass()));
+	if (HealthCompA == nullptr || HealthCompB == nullptr) return true;
+	return HealthCompA->FriendlyFireDisabled || HealthCompB->FriendlyFireDisabled;
 }
 
 void USHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -65,4 +65,8 @@ public:
 	// BlueprintPure == dont have to pass in execution node
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HealthComponent")
 	static bool IsFriendly(AActor* ActorA, AActor* AActorB);
+
+	// if friendly, check if friendly fire disabled
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HealthComponent")
+	static bool ShouldApplyDamage(AActor* ActorA, AActor* AActorB);
 };

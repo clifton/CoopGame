@@ -89,6 +89,7 @@ FVector ASTrackerBot::GetNextPathPoint()
 	{
 		USHealthComponent* CharHealthComp = Cast<USHealthComponent>(CharPawn->GetComponentByClass(USHealthComponent::StaticClass()));
 		if (HealthComp == nullptr || CharHealthComp->GetHealth() <= 0.0f) continue;
+		if (HealthComp->TeamNum == CharHealthComp->TeamNum) continue;
 
 		if (ClosestActor == nullptr || GetDistanceTo(CharPawn) < GetDistanceTo(ClosestActor))
 		{
@@ -234,12 +235,10 @@ void ASTrackerBot::Tick(float DeltaTime)
 
 void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Overlapped with %s"), *OtherActor->GetName());
-
 	if (bStartedSelfDestruction) return;
 
-	ASCharacter* PlayerPawn = Cast<ASCharacter>(OtherActor);
-	if (PlayerPawn && PlayerPawn->IsPlayerControlled())
+	APawn* OtherPawn = Cast<APawn>(OtherActor);
+	if (OtherPawn && !USHealthComponent::IsFriendly(this, OtherPawn))
 	{
 		if (Role == ROLE_Authority)
 		{
