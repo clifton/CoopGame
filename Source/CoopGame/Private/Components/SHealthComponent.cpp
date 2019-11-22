@@ -43,7 +43,8 @@ void USHealthComponent::HandleTakeAnyDamage(
 	if (InstigatorActor == nullptr) InstigatorActor = DamageCauser;
 	if (InstigatorActor->GetOwner() != nullptr) InstigatorActor = InstigatorActor->GetOwner();
 
-	if (IsFriendly(InstigatorActor, DamagedActor)) return;
+	// disallow damage to self
+	if (InstigatorActor != DamagedActor && IsFriendly(InstigatorActor, DamagedActor)) return;
 
 	Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
 
@@ -96,8 +97,6 @@ float USHealthComponent::GetHealth() const
 bool USHealthComponent::IsFriendly(AActor* ActorA, AActor* ActorB)
 {
 	if (ActorA == nullptr || ActorB == nullptr) return true;
-	// allow damage to self
-	if (ActorA == ActorB) return false;
 	USHealthComponent* HealthCompA = Cast<USHealthComponent>(ActorA->GetComponentByClass(USHealthComponent::StaticClass()));
 	USHealthComponent* HealthCompB = Cast<USHealthComponent>(ActorB->GetComponentByClass(USHealthComponent::StaticClass()));
 	if (HealthCompA == nullptr || HealthCompB == nullptr) return true;
