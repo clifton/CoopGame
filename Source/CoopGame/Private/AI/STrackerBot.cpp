@@ -239,7 +239,7 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (bStartedSelfDestruction) return;
 
 	ASCharacter* PlayerPawn = Cast<ASCharacter>(OtherActor);
-	if (PlayerPawn)
+	if (PlayerPawn && PlayerPawn->IsPlayerControlled())
 	{
 		if (Role == ROLE_Authority)
 		{
