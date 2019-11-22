@@ -74,6 +74,7 @@ protected:
 
 	FTimerHandle TimerHandle_SelfDamage;
 	FTimerHandle TimerHandle_UpdatePowerLevel;
+	FTimerHandle TimerHandle_PathUpdateInterval;
 
 	// dynamic material to pulse on damage
 	UMaterialInstanceDynamic* MatInst;

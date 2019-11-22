@@ -89,7 +89,7 @@ FVector ASTrackerBot::GetNextPathPoint()
 	{
 		USHealthComponent* CharHealthComp = Cast<USHealthComponent>(CharPawn->GetComponentByClass(USHealthComponent::StaticClass()));
 		if (HealthComp == nullptr || CharHealthComp->GetHealth() <= 0.0f) continue;
-		if (HealthComp->TeamNum == CharHealthComp->TeamNum) continue;
+		if (USHealthComponent::IsFriendly(CharPawn, this)) continue;
 
 		if (ClosestActor == nullptr || GetDistanceTo(CharPawn) < GetDistanceTo(ClosestActor))
 		{
@@ -99,10 +99,12 @@ FVector ASTrackerBot::GetNextPathPoint()
 
 	// use deprecated navigation system
 	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), ClosestActor);
+	GetWorldTimerManager().ClearTimer(TimerHandle_PathUpdateInterval);
 
 	// return next path point
 	if (NavPath && NavPath->PathPoints.Num() > 1)
 	{
+		GetWorldTimerManager().SetTimer(TimerHandle_PathUpdateInterval, [this] { NextPathPoint = GetNextPathPoint(); }, 2.0f, false);
 		return NavPath->PathPoints[1];
 	}
 
@@ -159,6 +161,7 @@ void ASTrackerBot::SelfDestruct()
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
 		GetWorldTimerManager().ClearTimer(TimerHandle_UpdatePowerLevel);
+		GetWorldTimerManager().ClearTimer(TimerHandle_PathUpdateInterval);
 		
 		// immediate destroy doesnt let animation play on clients
 		SetLifeSpan(2.0f);
