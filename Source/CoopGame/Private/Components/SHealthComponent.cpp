@@ -2,12 +2,15 @@
 #include "Components/SHealthComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "SGameMode.h"
+#include "SExplosiveActor.h"
 
 
 USHealthComponent::USHealthComponent()
 {
 	DefaultHealth = 100.0f;
 	bIsDead = false;
+	TeamNum = 255;
+	FriendlyFireDisabled = false;
 
 	SetIsReplicated(true);
 }
@@ -32,15 +35,21 @@ void USHealthComponent::HandleTakeAnyDamage(
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (Damage <= 0.0f || bIsDead) return;
+	
+
+	AActor* InstigatorActor = nullptr;
+	if (InstigatedBy) InstigatorActor = InstigatedBy->GetPawn();
+	if (InstigatorActor == nullptr) InstigatorActor = DamageCauser->Instigator;
+	if (InstigatorActor == nullptr) InstigatorActor = DamageCauser;
+	if (InstigatorActor->GetOwner() != nullptr) InstigatorActor = InstigatorActor->GetOwner();
+
+	if (IsFriendly(InstigatorActor, DamagedActor)) return;
 
 	Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
-	// UE_LOG(LogTemp, Log, TEXT("Health changed: %s"), *FString::SanitizeFloat(Health));
 
 	OnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 
 	if (InstigatedBy) UE_LOG(LogTemp, Warning, TEXT("Killer Controller: %s"), *InstigatedBy->GetName());
-	UE_LOG(LogTemp, Warning, TEXT("Victim Actor: %s"), *DamagedActor->GetName());
-	UE_LOG(LogTemp, Warning, TEXT("Weapon Actor: %s"), *DamageCauser->GetName());
 
 	bIsDead = Health <= 0.0f;
 	if (bIsDead)
@@ -82,6 +91,19 @@ void USHealthComponent::Heal(float HealAmount)
 float USHealthComponent::GetHealth() const
 {
 	return Health;
+}
+
+bool USHealthComponent::IsFriendly(AActor* ActorA, AActor* ActorB)
+{
+	if (ActorA == nullptr || ActorB == nullptr) return true;
+	// allow damage to self
+	if (ActorA == ActorB) return false;
+	USHealthComponent* HealthCompA = Cast<USHealthComponent>(ActorA->GetComponentByClass(USHealthComponent::StaticClass()));
+	USHealthComponent* HealthCompB = Cast<USHealthComponent>(ActorB->GetComponentByClass(USHealthComponent::StaticClass()));
+	if (HealthCompA == nullptr || HealthCompB == nullptr) return true;
+	if (HealthCompA->FriendlyFireDisabled || HealthCompB->FriendlyFireDisabled) return false;
+
+	return HealthCompA->TeamNum == HealthCompB->TeamNum;
 }
 
 void USHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
