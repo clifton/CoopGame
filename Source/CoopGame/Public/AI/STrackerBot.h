@@ -95,6 +95,8 @@ protected:
 	UFUNCTION()
 	void OnRep_PowerLevel();
 
+	void SelfDestructTick();
+
 public:	
 
 	virtual void Tick(float DeltaTime) override;

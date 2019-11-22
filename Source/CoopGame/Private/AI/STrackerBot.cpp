@@ -160,7 +160,6 @@ void ASTrackerBot::SelfDestruct()
 		
 		// immediate destroy doesnt let animation play on clients
 		SetLifeSpan(2.0f);
-		GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
 	}
 }
 
@@ -245,7 +244,8 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 		{
 			GetWorldTimerManager().SetTimer(
 				TimerHandle_SelfDamage,
-				[this]() { UGameplayStatics::ApplyDamage(this, SelfDestructTickDamage, GetInstigatorController(), this, nullptr); },
+				this, &ASTrackerBot::SelfDestructTick,
+				// [this]() {  },
 				SelfDamageInterval, true, 0.0f);
 		}
 
@@ -253,6 +253,11 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 		UGameplayStatics::SpawnSoundAttached(BeginSelfDestructSound, RootComponent);
 		bStartedSelfDestruction = true;
 	}
+}
+
+void ASTrackerBot::SelfDestructTick()
+{
+	UGameplayStatics::ApplyDamage(this, SelfDestructTickDamage, GetInstigatorController(), this, nullptr);
 }
 
 void ASTrackerBot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
