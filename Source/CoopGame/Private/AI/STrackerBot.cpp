@@ -32,6 +32,7 @@ ASTrackerBot::ASTrackerBot()
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
 	HealthComp->DefaultHealth = 50.0f;
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASTrackerBot::OnHealthChanged);
+	HealthComp->FriendlyFireDisabled = true;
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	SphereComp->SetCollisionObjectType(COLLISION_TRACKERBOT);
@@ -88,6 +89,7 @@ FVector ASTrackerBot::GetNextPathPoint()
 	{
 		USHealthComponent* CharHealthComp = Cast<USHealthComponent>(CharPawn->GetComponentByClass(USHealthComponent::StaticClass()));
 		if (HealthComp == nullptr || CharHealthComp->GetHealth() <= 0.0f) continue;
+		if (USHealthComponent::IsFriendly(CharPawn, this)) continue;
 
 		if (ClosestActor == nullptr || GetDistanceTo(CharPawn) < GetDistanceTo(ClosestActor))
 		{
@@ -97,10 +99,12 @@ FVector ASTrackerBot::GetNextPathPoint()
 
 	// use deprecated navigation system
 	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), ClosestActor);
+	GetWorldTimerManager().ClearTimer(TimerHandle_PathUpdateInterval);
 
 	// return next path point
 	if (NavPath && NavPath->PathPoints.Num() > 1)
 	{
+		GetWorldTimerManager().SetTimer(TimerHandle_PathUpdateInterval, [this] { NextPathPoint = GetNextPathPoint(); }, 2.0f, false);
 		return NavPath->PathPoints[1];
 	}
 
@@ -157,10 +161,10 @@ void ASTrackerBot::SelfDestruct()
 
 		GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
 		GetWorldTimerManager().ClearTimer(TimerHandle_UpdatePowerLevel);
+		GetWorldTimerManager().ClearTimer(TimerHandle_PathUpdateInterval);
 		
 		// immediate destroy doesnt let animation play on clients
 		SetLifeSpan(2.0f);
-		GetWorldTimerManager().ClearTimer(TimerHandle_SelfDamage);
 	}
 }
 
@@ -234,18 +238,17 @@ void ASTrackerBot::Tick(float DeltaTime)
 
 void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Overlapped with %s"), *OtherActor->GetName());
-
 	if (bStartedSelfDestruction) return;
 
-	ASCharacter* PlayerPawn = Cast<ASCharacter>(OtherActor);
-	if (PlayerPawn)
+	APawn* OtherPawn = Cast<APawn>(OtherActor);
+	if (OtherPawn && !USHealthComponent::IsFriendly(this, OtherPawn))
 	{
 		if (Role == ROLE_Authority)
 		{
 			GetWorldTimerManager().SetTimer(
 				TimerHandle_SelfDamage,
-				[this]() { UGameplayStatics::ApplyDamage(this, SelfDestructTickDamage, GetInstigatorController(), this, nullptr); },
+				this, &ASTrackerBot::SelfDestructTick,
+				// [this]() {  },
 				SelfDamageInterval, true, 0.0f);
 		}
 
@@ -253,6 +256,11 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 		UGameplayStatics::SpawnSoundAttached(BeginSelfDestructSound, RootComponent);
 		bStartedSelfDestruction = true;
 	}
+}
+
+void ASTrackerBot::SelfDestructTick()
+{
+	UGameplayStatics::ApplyDamage(this, SelfDestructTickDamage, GetInstigatorController(), this, nullptr);
 }
 
 void ASTrackerBot::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

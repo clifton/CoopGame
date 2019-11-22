@@ -13,6 +13,7 @@ ASExplosiveActor::ASExplosiveActor()
 
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComponent"));
 	HealthComp->DefaultHealth = 40.0f;
+	HealthComp->FriendlyFireDisabled = true;
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
 	MeshComp->SetSimulatePhysics(true);

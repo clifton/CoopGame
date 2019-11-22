@@ -31,6 +31,13 @@ public:
 
 	USHealthComponent();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HealthComponent")
+	uint8 TeamNum;
+
+	// disable friendly fire for explosive props, trackerbots, etc
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HealthComponent")
+	bool FriendlyFireDisabled;
+
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_Health, BlueprintReadOnly, Category = "HealthComponent")
 	float Health;
@@ -53,4 +60,13 @@ public:
 	void Heal(float HealAmount);
 
 	float GetHealth() const;
+
+	// returns true if friendly or unknown team affiliation
+	// BlueprintPure == dont have to pass in execution node
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HealthComponent")
+	static bool IsFriendly(AActor* ActorA, AActor* AActorB);
+
+	// if friendly, check if friendly fire disabled
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HealthComponent")
+	static bool ShouldApplyDamage(AActor* ActorA, AActor* AActorB);
 };

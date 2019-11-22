@@ -83,6 +83,10 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_HitScanTrace)
 	FHitScanTrace HitScanTrace;
 
+	// Bullet spread in degrees
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon", meta = (ClampMin = 0.0f))
+	float BulletSpread;
+
 	// bullets per minute fired
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float RateOfFire;
